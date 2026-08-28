@@ -17,8 +17,8 @@ export function GardenLayout() {
       <path d="M 157 1248 L 420 1248" stroke={WALL} strokeWidth="6" />
 
       {/* right green hedge */}
-      <path d="M 401 682 L 401 1240" fill="none" stroke={GREEN_DARK} strokeWidth="8" />
-      <path d="M 397 682 L 397 1240" fill="none" stroke={GREEN} strokeWidth="3" />
+      <path d="M 401 682 L 401 1240" fill="none" stroke={GREEN_DARK} strokeWidth="10" />
+      <path d="M 397 682 L 397 1240" fill="none" stroke={GREEN} strokeWidth="5" />
       {gardenBushes.map(([x, y, s], i) => <Bush key={i} x={x} y={y} s={s} />)}
 
       <text x="285" y="705" textAnchor="middle" fontSize="10" fill="#7b7b72" letterSpacing="1.7">GARDEN DINE</text>

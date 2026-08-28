@@ -1,8 +1,8 @@
 import type { FloorTable, Section } from '@/lib/tables';
+import { FurnitureDefs } from './FurnitureDefs';
 import { GardenLayout } from './GardenLayout';
 import { RenderTable } from './RenderTable';
 import { RestaurantLayout } from './RestaurantLayout';
-import { BG } from './colors';
 
 const VIEW = {
   restaurant: { box: '0 0 460 570', width: 460, height: 570 },
@@ -32,7 +32,8 @@ export function FloorPlanSVG({
         style={{ width: '100%', maxWidth: 620 }}
         xmlns="http://www.w3.org/2000/svg"
       >
-        <rect width={view.width} height={view.height} fill={BG} />
+        <FurnitureDefs />
+        <rect width={view.width} height={view.height} fill="#ffffff" />
 
         {section === 'restaurant' ? <RestaurantLayout /> : <GardenLayout />}
 

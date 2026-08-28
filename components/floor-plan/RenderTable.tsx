@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Facing, FloorTable } from '@/lib/tables';
 import { Chair } from './Chair';
+import { CurvedSofa } from './CurvedSofa';
+import { FURNITURE_FILL, GOLD, GOLD_DARK } from './colors';
 
 const FACING_ARC: Record<Facing, { start: number; sweep: number }> = {
   e: { start: -Math.PI / 2, sweep: Math.PI },
@@ -31,7 +33,7 @@ function TableLabel({
       textAnchor="middle"
       fontSize="9"
       fontWeight="700"
-      fill={selected ? '#fff' : '#4b463c'}
+      fill={selected ? '#fff' : GOLD_DARK}
       pointerEvents="none"
     >
       {number}
@@ -48,7 +50,7 @@ function chairsAlongSide(
   rotate: number,
   outsideNx: number,
   outsideNy: number,
-  gap = 10,
+  gap = 12,
 ) {
   return Array.from({ length: count }, (_, i) => {
     const t = count === 1 ? 0.5 : i / (count - 1);
@@ -78,14 +80,14 @@ export function RenderTable({
 
   const allowed = t.capacity >= guestCount;
   const selected = selectedTable === t.id;
-  const fill = selected ? '#2e7d4f' : '#f9f6ef';
-  const stroke = selected ? '#14542f' : '#b1a78f';
+  const fill = selected ? '#2e7d4f' : FURNITURE_FILL;
+  const stroke = selected ? '#14542f' : GOLD;
 
   const click = () => allowed && onSelect(t.id);
   const common = {
     fill,
     stroke,
-    strokeWidth: selected ? 3 : 1.6,
+    strokeWidth: selected ? 3 : 1.8,
     opacity: allowed || selected ? 1 : 0.28,
     style: { cursor: allowed ? 'pointer' : 'not-allowed' as const },
     onClick: click,
@@ -98,12 +100,19 @@ export function RenderTable({
 
   if (t.shape === 'circle') {
     const r = t.w / 2;
-    const chairR = r + 11;
+    const chairR = r + 14;
     return (
       <g key={t.id} {...common}>
         {[...Array(t.capacity)].map((_, i) => {
           const a = (Math.PI * 2 * i) / t.capacity - Math.PI / 2;
-          return <Chair key={i} x={t.x + Math.cos(a) * chairR} y={t.y + Math.sin(a) * chairR} />;
+          return (
+            <Chair
+              key={i}
+              x={t.x + Math.cos(a) * chairR}
+              y={t.y + Math.sin(a) * chairR}
+              rotate={(a * 180) / Math.PI + 90}
+            />
+          );
         })}
         {selected && <circle cx={t.x} cy={t.y} r={r + 12} fill="#2e7d4f" opacity="0.16" pointerEvents="none" />}
         <circle cx={t.x} cy={t.y} r={r} {...common} />
@@ -114,26 +123,22 @@ export function RenderTable({
 
   if (t.shape === 'semicircle') {
     const r = t.w / 2;
-    const chairR = r + 11;
     const { start, sweep } = FACING_ARC[t.facing ?? 'w'];
-    const end = start + sweep;
-    const large = sweep > Math.PI ? 1 : 0;
-    const sx = t.x + Math.cos(start) * r;
-    const sy = t.y + Math.sin(start) * r;
-    const ex = t.x + Math.cos(end) * r;
-    const ey = t.y + Math.sin(end) * r;
+    const tableR = Math.max(14, r * 0.42);
 
     return (
       <g key={t.id} {...common}>
-        {selected && <circle cx={t.x} cy={t.y} r={r + 12} fill="#2e7d4f" opacity="0.16" pointerEvents="none" />}
-        <path
-          d={`M ${sx} ${sy} A ${r} ${r} 0 ${large} 1 ${ex} ${ey} L ${t.x} ${t.y} Z`}
-          {...common}
+        {selected && <circle cx={t.x} cy={t.y} r={r + 10} fill="#2e7d4f" opacity="0.14" pointerEvents="none" />}
+        <CurvedSofa
+          cx={t.x}
+          cy={t.y}
+          r={r}
+          start={start}
+          sweep={sweep}
+          seats={t.capacity}
+          selected={selected}
         />
-        {[...Array(t.capacity)].map((_, i) => {
-          const a = start + (sweep * i) / Math.max(t.capacity - 1, 1);
-          return <Chair key={i} x={t.x + Math.cos(a) * chairR} y={t.y + Math.sin(a) * chairR} />;
-        })}
+        <circle cx={t.x} cy={t.y} r={tableR} {...common} />
         <TableLabel x={t.x} y={t.y} number={t.number} selected={selected} />
       </g>
     );
