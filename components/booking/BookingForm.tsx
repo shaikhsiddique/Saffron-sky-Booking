@@ -64,6 +64,17 @@ export function BookingForm({
           {selectedTable ? <>Selected table: <span className="text-[#2e7d4f]">{selectedTable}</span></> : 'Click a table on the floor plan'}
         </div>
 
+        {/* 1-Hour Dining Policy Notice */}
+        <div className="rounded-xl border border-[#e6d8b5] bg-[#fffcf5] p-3 text-xs text-[#6e5d3b] flex items-start gap-2.5">
+          <span className="text-base leading-none">⏱️</span>
+          <div>
+            <strong className="font-semibold text-[#544426]">1-Hour Dining Policy:</strong>
+            <p className="mt-0.5 opacity-90 leading-tight">
+              Reservations are valid for a <span className="font-semibold text-[#2e7d4f]">1-hour slot</span>. Tables must be freed promptly when your 1-hour slot ends for the next reservation.
+            </p>
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={loading}

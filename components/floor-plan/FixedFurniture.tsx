@@ -1,3 +1,6 @@
+import { Chair } from './Chair';
+import { ROOM, THIN, WALL } from './colors';
+
 export function FixedFurniture() {
   return (
     <g>
@@ -21,7 +24,7 @@ export function FixedFurniture() {
 
       {/* stair block */}
       <rect x="242" y="405" width="102" height="88" fill="#f5f1e9" stroke={WALL} strokeWidth="3" />
-      {[0,1,2,3,4,5].map((i) => (
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <line key={i} x1="250" y1={417 + i * 10} x2="295" y2={417 + i * 10} stroke="#777" strokeWidth="1.2" />
       ))}
       <rect x="266" y="430" width="26" height="35" fill="none" stroke="#777" strokeWidth="1.2" />
@@ -57,6 +60,6 @@ export function FixedFurniture() {
       {/* tiny architectural boxes / columns */}
       {[30, 110, 205, 245, 455, 492].map((x) => <rect key={x} x={x} y="370" width="9" height="9" fill="#e1ddd4" stroke="#777" strokeWidth="1" />)}
     </g>
-    
+
   );
 }

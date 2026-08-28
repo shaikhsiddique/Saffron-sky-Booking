@@ -14,61 +14,63 @@ export interface FloorTable {
   h: number;
   isAvailable: boolean;
   facing?: Facing;
+  sofaSide?: Facing;
+  /** Photo shown on hover. Replace this file (or the path) with the real table photo. */
+  image: string;
 }
 
 // Restaurant coordinates are in viewBox 0 0 460 560.
 // Tables 10–12 are the crossed-out seats on the plan and are omitted.
+const PHOTO = '/tables/dummy.jpg';
+
 export const RESTAURANT_TABLES: FloorTable[] = [
-  // Top wall, left to right
-  { id: 'R1', number: 1, capacity: 6, section: 'restaurant', shape: 'booth', x: 88, y: 54, w: 78, h: 26, isAvailable: true },
-  { id: 'R2', number: 2, capacity: 6, section: 'restaurant', shape: 'booth', x: 180, y: 54, w: 78, h: 26, isAvailable: true },
-  { id: 'R3', number: 3, capacity: 6, section: 'restaurant', shape: 'booth', x: 252, y: 72, w: 26, h: 62, isAvailable: true },
-  { id: 'R4', number: 4, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 355, y: 78, w: 86, h: 86, isAvailable: true, facing: 'sw' },
+  // Top Row along top wall: Tables 1, 2, 3 (6 seats each), Table 4 (6 seats curved)
+  { id: 'R1', number: 1, capacity: 6, section: 'restaurant', shape: 'booth', x: 76, y: 52, w: 68, h: 24, isAvailable: true, sofaSide: 'n', image: PHOTO },
+  { id: 'R2', number: 2, capacity: 6, section: 'restaurant', shape: 'booth', x: 158, y: 52, w: 68, h: 24, isAvailable: true, sofaSide: 'n', image: PHOTO },
+  { id: 'R3', number: 3, capacity: 6, section: 'restaurant', shape: 'booth', x: 238, y: 58, w: 24, h: 54, isAvailable: true, image: PHOTO },
+  { id: 'R4', number: 4, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 326, y: 58, w: 72, h: 72, isAvailable: true, facing: 'sw', image: PHOTO },
 
-  // Right curved wall
-  { id: 'R5', number: 5, capacity: 8, section: 'restaurant', shape: 'semicircle', x: 392, y: 215, w: 88, h: 88, isAvailable: true, facing: 'w' },
+  // Right Wall: Table 5 (6 seats curved)
+  { id: 'R5', number: 5, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 406, y: 145, w: 72, h: 72, isAvailable: true, facing: 'w', image: PHOTO },
 
-  // Above the L partition, right to left: 6, 7, 8, 9
-  { id: 'R6', number: 6, capacity: 4, section: 'restaurant', shape: 'booth', x: 268, y: 168, w: 50, h: 24, isAvailable: true },
-  { id: 'R7', number: 7, capacity: 4, section: 'restaurant', shape: 'booth', x: 204, y: 168, w: 50, h: 24, isAvailable: true },
-  { id: 'R8', number: 8, capacity: 4, section: 'restaurant', shape: 'booth', x: 140, y: 168, w: 50, h: 24, isAvailable: true },
-  { id: 'R9', number: 9, capacity: 4, section: 'restaurant', shape: 'booth', x: 76, y: 168, w: 50, h: 24, isAvailable: true },
+  // Above Horizontal Green Hedge: Tables 9, 8, 7, 6 (4 seats each)
+  { id: 'R9', number: 9, capacity: 4, section: 'restaurant', shape: 'booth', x: 92, y: 134, w: 44, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R8', number: 8, capacity: 4, section: 'restaurant', shape: 'booth', x: 152, y: 134, w: 44, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R7', number: 7, capacity: 4, section: 'restaurant', shape: 'booth', x: 212, y: 134, w: 44, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R6', number: 6, capacity: 4, section: 'restaurant', shape: 'booth', x: 272, y: 134, w: 44, h: 20, isAvailable: true, image: PHOTO },
 
-  // Below the L partition, right to left: 13, 14, 15
-  { id: 'R13', number: 13, capacity: 4, section: 'restaurant', shape: 'booth', x: 228, y: 250, w: 50, h: 24, isAvailable: true },
-  { id: 'R14', number: 14, capacity: 4, section: 'restaurant', shape: 'booth', x: 154, y: 250, w: 50, h: 24, isAvailable: true },
-  { id: 'R15', number: 15, capacity: 4, section: 'restaurant', shape: 'booth', x: 80, y: 250, w: 50, h: 24, isAvailable: true },
+  // Below Horizontal Green Hedge: Tables 11, 12, 13 (4 seats each)
+  { id: 'R11', number: 11, capacity: 4, section: 'restaurant', shape: 'booth', x: 152, y: 198, w: 44, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R12', number: 12, capacity: 4, section: 'restaurant', shape: 'booth', x: 212, y: 198, w: 44, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R13', number: 13, capacity: 4, section: 'restaurant', shape: 'booth', x: 272, y: 198, w: 44, h: 20, isAvailable: true, image: PHOTO },
 
-  // Column along the inside of the vertical partition
-  { id: 'R16', number: 16, capacity: 4, section: 'restaurant', shape: 'circle', x: 252, y: 312, w: 34, h: 34, isAvailable: true },
-  { id: 'R17', number: 17, capacity: 4, section: 'restaurant', shape: 'circle', x: 252, y: 362, w: 34, h: 34, isAvailable: true },
-  { id: 'R18', number: 18, capacity: 4, section: 'restaurant', shape: 'circle', x: 252, y: 412, w: 34, h: 34, isAvailable: true },
+  // To the Right of Vertical Green Hedge: Tables 14, 15, 16 (4 seats each)
+  { id: 'R14', number: 14, capacity: 4, section: 'restaurant', shape: 'booth', x: 300, y: 245, w: 34, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R15', number: 15, capacity: 4, section: 'restaurant', shape: 'booth', x: 300, y: 305, w: 34, h: 20, isAvailable: true, image: PHOTO },
+  { id: 'R16', number: 16, capacity: 4, section: 'restaurant', shape: 'booth', x: 300, y: 365, w: 34, h: 20, isAvailable: true, image: PHOTO },
 
-  // Left interior / entrance
-  { id: 'R19', number: 19, capacity: 8, section: 'restaurant', shape: 'booth', x: 98, y: 400, w: 96, h: 28, isAvailable: true },
+  // Lounge Suite in Corner Alcove: Table 19 (8 seats)
+  { id: 'R19', number: 19, capacity: 8, section: 'restaurant', shape: 'booth', x: 152, y: 268, w: 58, h: 42, isAvailable: true, image: PHOTO },
 
-  // Bottom enclave banquet table
-  { id: 'R20', number: 20, capacity: 11, section: 'restaurant', shape: 'oval', x: 230, y: 508, w: 210, h: 38, isAvailable: true },
+  // Boardroom / Banquet Table at Bottom: Table 20 (11 seats)
+  { id: 'R20', number: 20, capacity: 8, section: 'restaurant', shape: 'oval', x: 215, y: 442, w: 105, h: 32, isAvailable: true, image: PHOTO },
 ];
 
 export const GARDEN_TABLES: FloorTable[] = [
-  // Left 4-tops
-  { id: 'G1', number: 1, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 785, w: 34, h: 22, isAvailable: true },
-  { id: 'G2', number: 2, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 900, w: 34, h: 22, isAvailable: true },
-  { id: 'G3', number: 3, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 1015, w: 34, h: 22, isAvailable: true },
+  { id: 'G1', number: 1, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 785, w: 34, h: 22, isAvailable: true, image: PHOTO },
+  { id: 'G2', number: 2, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 900, w: 34, h: 22, isAvailable: true, image: PHOTO },
+  { id: 'G3', number: 3, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 1015, w: 34, h: 22, isAvailable: true, image: PHOTO },
 
-  // Central round tables
-  { id: 'G4', number: 4, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 810, w: 38, h: 38, isAvailable: true },
-  { id: 'G5', number: 5, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 930, w: 38, h: 38, isAvailable: true },
-  { id: 'G6', number: 6, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 1050, w: 38, h: 38, isAvailable: true },
-  { id: 'G7', number: 7, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 810, w: 38, h: 38, isAvailable: true },
-  { id: 'G8', number: 8, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 930, w: 38, h: 38, isAvailable: true },
-  { id: 'G9', number: 9, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 1050, w: 38, h: 38, isAvailable: true },
+  { id: 'G4', number: 4, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 810, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  { id: 'G5', number: 5, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 930, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  { id: 'G6', number: 6, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 1050, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  { id: 'G7', number: 7, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 810, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  { id: 'G8', number: 8, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 930, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  { id: 'G9', number: 9, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 1050, w: 38, h: 38, isAvailable: true, image: PHOTO },
 
-  // Right edge / hedge booths
-  { id: 'G10', number: 10, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 790, w: 36, h: 22, isAvailable: true },
-  { id: 'G11', number: 11, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 905, w: 36, h: 22, isAvailable: true },
-  { id: 'G12', number: 12, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 1020, w: 36, h: 22, isAvailable: true },
+  { id: 'G10', number: 10, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 790, w: 36, h: 22, isAvailable: true, image: PHOTO },
+  { id: 'G11', number: 11, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 905, w: 36, h: 22, isAvailable: true, image: PHOTO },
+  { id: 'G12', number: 12, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 1020, w: 36, h: 22, isAvailable: true, image: PHOTO },
 ];
 
 export const ALL_TABLES = [...RESTAURANT_TABLES, ...GARDEN_TABLES];
@@ -77,3 +79,57 @@ export const SECTION_LABEL: Record<Section, string> = {
   garden: 'Garden Dine',
 };
 export const SECTION_TIME_SLOTS = ['7:30 – 8:30', '8:30 – 9:30', '9:30 – 10:30'];
+
+export interface Booking {
+  id: string;
+  guestName: string;
+  phone: string;
+  date: string;
+  time: string;
+  guestCount: number;
+  tableId: string;
+  tableCapacity: number;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+export function getRequiredTableCapacity(guestCount: number): number {
+  if (guestCount <= 4) return 4;
+  if (guestCount <= 6) return 6;
+  if (guestCount <= 8) return 8;
+  return 11;
+}
+
+export function isTableAllowedForParty(tableCapacity: number, guestCount: number): boolean {
+  const target = getRequiredTableCapacity(guestCount);
+  return tableCapacity === target || (guestCount > 8 && tableCapacity >= guestCount);
+}
+
+export function getAvailableTables(
+  tables: FloorTable[],
+  guestCount: number,
+  bookedTableIds: string[] = []
+): FloorTable[] {
+  return tables.filter(
+    (t) =>
+      t.isAvailable &&
+      isTableAllowedForParty(t.capacity, guestCount) &&
+      !bookedTableIds.includes(t.id)
+  );
+}
+
+export function assignBestTable(
+  availableTables: FloorTable[],
+  guestCount: number
+): FloorTable | undefined {
+  // Sort by smallest excess capacity first (best fit), then by table number
+  return [...availableTables].sort((a, b) => {
+    const diffA = a.capacity - guestCount;
+    const diffB = b.capacity - guestCount;
+    if (diffA !== diffB) return diffA - diffB;
+    return a.number - b.number;
+  })[0];
+}
+
+

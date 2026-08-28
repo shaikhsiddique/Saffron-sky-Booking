@@ -17,7 +17,7 @@ if (!admin.apps.length) {
   });
 }
 
-export const messaging = admin.messaging();
+export const getMessaging = () => admin.messaging();
 
 export async function sendBookingNotification(
   guestName: string,
@@ -26,7 +26,7 @@ export async function sendBookingNotification(
   guestCount: number
 ) {
   try {
-    await messaging().send({
+    await admin.messaging().send({
       notification: {
         title: '🍽️ New Booking!',
         body: `${guestName} • ${guestCount} guests • Table ${tableId} at ${time}`,
