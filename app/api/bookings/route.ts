@@ -1,6 +1,16 @@
+
 import { NextResponse } from 'next/server';
+import { getDatabase } from '@/lib/db';
 import { sendBookingNotification } from '@/lib/firebase';
-import { isTableAllowedForParty, RESTAURANT_TABLES, GARDEN_TABLES } from '@/lib/tables';
+import {
+  isTableAllowedForParty,
+  RESTAURANT_TABLES,
+  GARDEN_TABLES,
+} from '@/lib/tables';
+
+// ============================================================
+// DATABASE BOOKING TYPE
+// ============================================================
 
 interface BookingRecord {
   id: string;
@@ -11,80 +21,221 @@ interface BookingRecord {
   timeSlot: string;
   tableId: string;
   section: string;
-  createdAt: string;
-  /** Millisecond timestamp when this booking expires (1h after creation) */
-  expiresAtMs: number;
+  createdAt: Date;
+  expiresAt: Date;
 }
 
-// In-memory booking store (resets on cold start / redeploy on Vercel)
-const IN_MEMORY_BOOKINGS: BookingRecord[] = [];
+// ============================================================
+// TTL
+// ============================================================
 
-/** TTL = 1 hour in milliseconds */
 const BOOKING_TTL_MS = 60 * 60 * 1000;
 
-/**
- * Purge any bookings older than 1 hour from creation.
- * Called before every GET and POST to keep the store clean.
- */
-function cleanupExpiredBookings() {
-  const now = Date.now();
-  for (let i = IN_MEMORY_BOOKINGS.length - 1; i >= 0; i--) {
-    if (IN_MEMORY_BOOKINGS[i].expiresAtMs <= now) {
-      console.log(
-        `🧹 Auto-freed Table ${IN_MEMORY_BOOKINGS[i].tableId} – reservation expired (${IN_MEMORY_BOOKINGS[i].guestName}, ${IN_MEMORY_BOOKINGS[i].date} ${IN_MEMORY_BOOKINGS[i].timeSlot})`
-      );
-      IN_MEMORY_BOOKINGS.splice(i, 1);
-    }
+// ============================================================
+// GET /api/bookings
+// ============================================================
+
+export async function GET() {
+  console.log('\n========================================');
+  console.log('📥 GET /api/bookings');
+  console.log('========================================');
+
+  try {
+    console.log('🔌 Connecting to MongoDB...');
+
+    const db = await getDatabase();
+
+    console.log('✅ MongoDB connection successful');
+
+    const bookingsCollection =
+      db.collection<BookingRecord>('bookings');
+
+    console.log('📂 Collection:', bookingsCollection.collectionName);
+
+    const now = new Date();
+
+    console.log(
+      '⏰ Checking bookings active after:',
+      now.toISOString()
+    );
+
+    const bookings = await bookingsCollection
+      .find({
+        expiresAt: { $gt: now },
+      })
+      .toArray();
+
+    console.log(`📊 Active bookings: ${bookings.length}`);
+
+    console.log(
+      '📋 Active booking IDs:',
+      bookings.map((b) => b.id)
+    );
+
+    return NextResponse.json({
+      success: true,
+      bookings,
+      count: bookings.length,
+    });
+  } catch (error: any) {
+    console.error('\n❌ GET BOOKINGS ERROR');
+    console.error('Error:', error);
+    console.error('Message:', error?.message);
+    console.error('Stack:', error?.stack);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch bookings',
+      },
+      { status: 500 }
+    );
   }
 }
 
-/**
- * GET /api/bookings
- * Returns all active (non-expired) bookings.
- */
-export async function GET() {
-  cleanupExpiredBookings();
-  return NextResponse.json({
-    success: true,
-    bookings: IN_MEMORY_BOOKINGS,
-    count: IN_MEMORY_BOOKINGS.length,
-  });
-}
+// ============================================================
+// POST /api/bookings
+// ============================================================
 
-/**
- * POST /api/bookings
- * Creates a new reservation. Validates capacity slots, prevents double-booking,
- * and dispatches an FCM push notification if Firebase is configured.
- * Booking auto-deletes 1 hour after creation.
- */
 export async function POST(request: Request) {
+  console.log('\n========================================');
+  console.log('🚀 POST /api/bookings');
+  console.log('========================================');
+
   try {
-    cleanupExpiredBookings();
+    // --------------------------------------------------------
+    // 1. READ REQUEST
+    // --------------------------------------------------------
+
+    console.log('📥 Reading request body...');
 
     const body = await request.json();
-    const { guestName, phone, adults, children, date, timeSlot, tableId, section } = body;
 
-    // ── Required field validation ──
-    if (!guestName || !phone || !date || !timeSlot || !tableId) {
+    console.log('📦 Request body:', body);
+
+    const {
+      guestName,
+      phone,
+      adults,
+      children,
+      date,
+      timeSlot,
+      tableId,
+      section,
+    } = body;
+
+    // --------------------------------------------------------
+    // 2. VALIDATION
+    // --------------------------------------------------------
+
+    console.log('🔍 Validating required fields...');
+
+    if (
+      !guestName ||
+      !phone ||
+      !date ||
+      !timeSlot ||
+      !tableId
+    ) {
+      console.error('❌ Required field validation failed');
+
       return NextResponse.json(
-        { success: false, error: 'Please fill in all required booking fields.' },
+        {
+          success: false,
+          error: 'Please fill in all required booking fields.',
+        },
         { status: 400 }
       );
     }
 
-    const guestCount = (Number(adults) || 1) + (Number(children) || 0);
-    const tables = section === 'garden' ? GARDEN_TABLES : RESTAURANT_TABLES;
-    const targetTable = tables.find((t) => t.id === tableId);
+    console.log('✅ Required fields valid');
+
+    // --------------------------------------------------------
+    // 3. CALCULATE GUEST COUNT
+    // --------------------------------------------------------
+
+    const guestCount =
+      (Number(adults) || 1) +
+      (Number(children) || 0);
+
+    console.log('👥 Guest count:', guestCount);
+    console.log('   Adults:', adults);
+    console.log('   Children:', children);
+
+    if (guestCount < 1 || guestCount > 20) {
+      console.error(
+        '❌ Invalid guest count:',
+        guestCount
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid guest count.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // --------------------------------------------------------
+    // 4. FIND TABLE
+    // --------------------------------------------------------
+
+    const selectedSection =
+      section === 'garden'
+        ? 'garden'
+        : 'restaurant';
+
+    const tables =
+      selectedSection === 'garden'
+        ? GARDEN_TABLES
+        : RESTAURANT_TABLES;
+
+    console.log('🏠 Section:', selectedSection);
+    console.log('🪑 Looking for table:', tableId);
+
+    const targetTable = tables.find(
+      (t) => t.id === tableId
+    );
 
     if (!targetTable) {
+      console.error(
+        '❌ Table not found:',
+        tableId
+      );
+
       return NextResponse.json(
-        { success: false, error: `Table ${tableId} not found on the floor plan.` },
+        {
+          success: false,
+          error: `Table ${tableId} not found on the floor plan.`,
+        },
         { status: 404 }
       );
     }
 
-    // ── Capacity Slot Enforcer ──
-    if (!isTableAllowedForParty(targetTable.capacity, guestCount)) {
+    console.log('✅ Table found:', {
+      id: targetTable.id,
+      capacity: targetTable.capacity,
+    });
+
+    // --------------------------------------------------------
+    // 5. CHECK TABLE CAPACITY
+    // --------------------------------------------------------
+
+    console.log('🔍 Checking table capacity...');
+
+    const tableAllowed = isTableAllowedForParty(
+      targetTable.capacity,
+      guestCount
+    );
+
+    console.log('Capacity allowed:', tableAllowed);
+
+    if (!tableAllowed) {
+      console.error(
+        `❌ Table ${tableId} cannot accommodate ${guestCount} guests`
+      );
+
       return NextResponse.json(
         {
           success: false,
@@ -94,12 +245,60 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Double-booking conflict check ──
-    const conflict = IN_MEMORY_BOOKINGS.find(
-      (b) => b.tableId === tableId && b.date === date && b.timeSlot === timeSlot
+    console.log('✅ Capacity check passed');
+
+    // --------------------------------------------------------
+    // 6. CONNECT TO MONGODB
+    // --------------------------------------------------------
+
+    console.log('🔌 Connecting to MongoDB...');
+
+    const db = await getDatabase();
+
+    console.log('✅ MongoDB connection successful');
+
+    console.log('🗄️ Database name:', db.databaseName);
+
+    const bookingsCollection =
+      db.collection<BookingRecord>('bookings');
+
+    console.log(
+      '📂 Collection:',
+      bookingsCollection.collectionName
     );
 
-    if (conflict) {
+    // --------------------------------------------------------
+    // 7. CHECK EXISTING BOOKING
+    // --------------------------------------------------------
+
+    console.log('🔎 Checking for existing booking...');
+
+    console.log({
+      tableId,
+      date,
+      timeSlot,
+    });
+
+    const existingBooking =
+      await bookingsCollection.findOne({
+        tableId,
+        date,
+        timeSlot,
+        expiresAt: {
+          $gt: new Date(),
+        },
+      });
+
+    if (existingBooking) {
+      console.error('❌ DOUBLE BOOKING DETECTED');
+
+      console.error({
+        existingBookingId: existingBooking.id,
+        tableId: existingBooking.tableId,
+        date: existingBooking.date,
+        timeSlot: existingBooking.timeSlot,
+      });
+
       return NextResponse.json(
         {
           success: false,
@@ -109,46 +308,197 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Create booking record with 1-hour TTL ──
-    const now = Date.now();
-    const newBooking: BookingRecord = {
-      id: `BK-${now}`,
-      guestName,
-      phone,
+    console.log('✅ No conflicting booking found');
+
+    // --------------------------------------------------------
+    // 8. CREATE BOOKING
+    // --------------------------------------------------------
+
+    console.log('📝 Creating booking...');
+
+    const now = new Date();
+
+    const expiresAt = new Date(
+      now.getTime() + BOOKING_TTL_MS
+    );
+
+    const booking: BookingRecord = {
+      id: `BK-${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 8)}`,
+
+      guestName: String(guestName).trim(),
+
+      phone: String(phone).trim(),
+
       guestCount,
-      date,
-      timeSlot,
-      tableId,
-      section: section || 'restaurant',
-      createdAt: new Date(now).toISOString(),
-      expiresAtMs: now + BOOKING_TTL_MS,
+
+      date: String(date),
+
+      timeSlot: String(timeSlot),
+
+      tableId: String(tableId),
+
+      section: selectedSection,
+
+      createdAt: now,
+
+      expiresAt,
     };
 
-    IN_MEMORY_BOOKINGS.push(newBooking);
+    console.log('📦 Booking object:');
+    console.log(booking);
 
-    // ── FCM Push Notification ──
+    // --------------------------------------------------------
+    // 9. SAVE TO MONGODB
+    // --------------------------------------------------------
+
+    console.log('\n💾 ================================');
+    console.log('💾 INSERTING BOOKING INTO MONGODB');
+    console.log('💾 ================================');
+
+    const insertResult =
+      await bookingsCollection.insertOne(booking);
+
+    console.log('📌 MongoDB insert result:');
+    console.log({
+      acknowledged: insertResult.acknowledged,
+      insertedId: insertResult.insertedId,
+    });
+
+    if (!insertResult.acknowledged) {
+      console.error(
+        '❌ MongoDB did NOT acknowledge the insert'
+      );
+
+      throw new Error(
+        'MongoDB did not acknowledge booking insertion'
+      );
+    }
+
+    console.log('✅ BOOKING SAVED TO MONGODB');
+
+    // --------------------------------------------------------
+    // 10. VERIFY DATABASE RECORD
+    // --------------------------------------------------------
+
+    console.log('🔍 Verifying saved booking...');
+
+    const savedBooking =
+      await bookingsCollection.findOne({
+        _id: insertResult.insertedId,
+      });
+
+    if (!savedBooking) {
+      console.error(
+        '❌ CRITICAL: Insert succeeded but booking cannot be found'
+      );
+
+      throw new Error(
+        'Booking was inserted but could not be verified'
+      );
+    }
+
+    console.log('✅ BOOKING VERIFIED IN DATABASE');
+
+    console.log('📄 Saved booking:', savedBooking);
+
+    // --------------------------------------------------------
+    // 11. FCM NOTIFICATION
+    // --------------------------------------------------------
+
     let notificationStatus = 'skipped';
+
+    console.log('📲 Sending FCM notification...');
+
     try {
       if (process.env.FIREBASE_PROJECT_ID) {
-        await sendBookingNotification(guestName, tableId, timeSlot, guestCount);
+        await sendBookingNotification(
+          booking.guestName,
+          booking.tableId,
+          booking.timeSlot,
+          booking.guestCount
+        );
+
         notificationStatus = 'sent';
+
+        console.log('✅ FCM notification sent');
+      } else {
+        console.log(
+          'ℹ️ FIREBASE_PROJECT_ID not configured'
+        );
       }
-    } catch (fcmErr) {
-      console.warn('FCM dispatch warning:', fcmErr);
+    } catch (fcmError) {
+      console.warn(
+        '⚠️ FCM notification failed:',
+        fcmError
+      );
+
       notificationStatus = 'fcm_not_configured';
     }
 
+    // --------------------------------------------------------
+    // 12. SUCCESS
+    // --------------------------------------------------------
+
+    console.log('\n========================================');
+    console.log('🎉 BOOKING CREATED SUCCESSFULLY');
+    console.log('========================================');
+
+    console.log({
+      bookingId: booking.id,
+      mongoId: insertResult.insertedId,
+      guestName: booking.guestName,
+      tableId: booking.tableId,
+      date: booking.date,
+      timeSlot: booking.timeSlot,
+      guestCount: booking.guestCount,
+      expiresAt: booking.expiresAt,
+    });
+
+    console.log('========================================\n');
+
     return NextResponse.json({
       success: true,
-      booking: newBooking,
+
+      booking: {
+        ...booking,
+
+        // Return dates as ISO strings
+        createdAt: booking.createdAt.toISOString(),
+        expiresAt: booking.expiresAt.toISOString(),
+      },
+
       notificationStatus,
-      message: `Table ${tableId} reserved for ${guestName} (${guestCount} guests) on ${date} at ${timeSlot}. Your table will be automatically freed after 1 hour.`,
+
+      message: `Table ${tableId} reserved for ${guestName} (${guestCount} guests) on ${date} at ${timeSlot}.`,
     });
+
   } catch (error: any) {
-    console.error('Booking API Error:', error);
+    // --------------------------------------------------------
+    // GLOBAL ERROR
+    // --------------------------------------------------------
+
+    console.error('\n========================================');
+    console.error('🔥 BOOKING API ERROR');
+    console.error('========================================');
+
+    console.error('Error:', error);
+    console.error('Message:', error?.message);
+    console.error('Name:', error?.name);
+    console.error('Stack:', error?.stack);
+
+    console.error('========================================\n');
+
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error.' },
+      {
+        success: false,
+        error:
+          error?.message ||
+          'Internal server error.',
+      },
       { status: 500 }
     );
   }
 }
+

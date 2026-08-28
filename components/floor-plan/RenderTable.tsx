@@ -12,8 +12,8 @@ const FACING_ARC: Record<Facing, { start: number; sweep: number }> = {
   s: { start: 0, sweep: Math.PI },
   n: { start: Math.PI, sweep: Math.PI },
   sw: { start: (Math.PI * 0.55), sweep: Math.PI * 1.05 },
-  se: { start: -Math.PI * 0.05, sweep: Math.PI * 1.05 },
-  nw: { start: Math.PI * 0.95, sweep: Math.PI * 1.05 },
+  se: { start: -Math.PI * 0.45, sweep: Math.PI * 1.05 },
+  nw: { start: Math.PI * 0.80, sweep: Math.PI * 1.05 },
   ne: { start: -Math.PI * 0.55, sweep: Math.PI * 1.05 },
 };
 

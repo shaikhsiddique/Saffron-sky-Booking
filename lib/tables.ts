@@ -28,10 +28,10 @@ export const RESTAURANT_TABLES: FloorTable[] = [
   { id: 'R1', number: 1, capacity: 6, section: 'restaurant', shape: 'booth', x: 76, y: 52, w: 68, h: 24, isAvailable: true, sofaSide: 'n', image: PHOTO },
   { id: 'R2', number: 2, capacity: 6, section: 'restaurant', shape: 'booth', x: 158, y: 52, w: 68, h: 24, isAvailable: true, sofaSide: 'n', image: PHOTO },
   { id: 'R3', number: 3, capacity: 6, section: 'restaurant', shape: 'booth', x: 238, y: 58, w: 24, h: 54, isAvailable: true, image: PHOTO },
-  { id: 'R4', number: 4, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 326, y: 58, w: 72, h: 72, isAvailable: true, facing: 'sw', image: PHOTO },
+  { id: 'R4', number: 4, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 326, y: 58, w: 72, h: 72, isAvailable: true, facing: 'nw', image: PHOTO },
 
   // Right Wall: Table 5 (6 seats curved)
-  { id: 'R5', number: 5, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 406, y: 145, w: 72, h: 72, isAvailable: true, facing: 'w', image: PHOTO },
+  { id: 'R5', number: 5, capacity: 6, section: 'restaurant', shape: 'semicircle', x: 390, y: 145, w: 72, h: 72, isAvailable: true, facing: 'se', image: PHOTO },
 
   // Above Horizontal Green Hedge: Tables 9, 8, 7, 6 (4 seats each)
   { id: 'R9', number: 9, capacity: 4, section: 'restaurant', shape: 'booth', x: 92, y: 134, w: 44, h: 20, isAvailable: true, image: PHOTO },
@@ -53,7 +53,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
   { id: 'R19', number: 19, capacity: 8, section: 'restaurant', shape: 'booth', x: 152, y: 268, w: 58, h: 42, isAvailable: true, image: PHOTO },
 
   // Boardroom / Banquet Table at Bottom: Table 20 (11 seats)
-  { id: 'R20', number: 20, capacity: 8, section: 'restaurant', shape: 'oval', x: 215, y: 442, w: 105, h: 32, isAvailable: true, image: PHOTO },
+  { id: 'R17', number: 17, capacity: 8, section: 'restaurant', shape: 'oval', x: 245, y: 482, w: 105, h: 32, isAvailable: true, image: PHOTO },
 ];
 
 export const GARDEN_TABLES: FloorTable[] = [
@@ -94,16 +94,21 @@ export interface Booking {
   expiresAt: Date;
 }
 
+
 export function getRequiredTableCapacity(guestCount: number): number {
+  if (guestCount <= 2) return 2;
   if (guestCount <= 4) return 4;
   if (guestCount <= 6) return 6;
-  if (guestCount <= 8) return 8;
-  return 11;
+  return 8;
 }
 
-export function isTableAllowedForParty(tableCapacity: number, guestCount: number): boolean {
-  const target = getRequiredTableCapacity(guestCount);
-  return tableCapacity === target || (guestCount > 8 && tableCapacity >= guestCount);
+export function isTableAllowedForParty(
+  tableCapacity: number,
+  guestCount: number
+): boolean {
+  const maxCapacity = getRequiredTableCapacity(guestCount);
+
+  return tableCapacity <= maxCapacity;
 }
 
 export function getAvailableTables(
@@ -118,6 +123,8 @@ export function getAvailableTables(
       !bookedTableIds.includes(t.id)
   );
 }
+
+
 
 export function assignBestTable(
   availableTables: FloorTable[],

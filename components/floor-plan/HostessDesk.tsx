@@ -1,6 +1,6 @@
 import { GOLD_DARK, THIN, TAUPE } from './colors';
 
-export function HostessDesk({ x = 336, y = 475 }: { x?: number; y?: number }) {
+export function HostessDesk({ x = 336, y = 575 }: { x?: number; y?: number }) {
   return (
     <g id="hostess-desk">
       {/* Desk Shape - L-shaped reception counter */}

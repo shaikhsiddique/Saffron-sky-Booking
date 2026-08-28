@@ -99,7 +99,7 @@ export function RestaurantLayout() {
 
   const lHedge = [
     ...sampleLine(62, 172, 328, 172, 6.5),
-    ...sampleLine(328, 172, 328, 424, 6.5).slice(1),
+    ...sampleLine(328, 172, 328, 380, 6.5).slice(1),
   ];
 
   return (
@@ -135,13 +135,13 @@ export function RestaurantLayout() {
         stroke={WALL}
         strokeWidth="3.5"
       />
-      <path
-        d="M 276 430 L 434 430"
-        fill="none"
-        stroke={WALL}
-        strokeWidth="3.5"
-      />
-
+     
+     <path 
+  d="M 300 430 L 300 548" 
+  fill="none" 
+  stroke={WALL} 
+  strokeWidth="3.5" 
+/>
       {/* Lower Room Entrance Door with 90 deg swing arc */}
       <g>
         <path
@@ -155,13 +155,13 @@ export function RestaurantLayout() {
       </g>
 
       {/* Booth Partition Screens along the top wall (between R1, R2, R3, R4) */}
-      <PartitionScreen x1={136} y1={22} x2={136} y2={74} />
-      <PartitionScreen x1={232} y1={22} x2={232} y2={74} />
+      <PartitionScreen x1={116} y1={22} x2={116} y2={74} />
+      <PartitionScreen x1={202} y1={22} x2={202} y2={74} />
       <PartitionScreen x1={278} y1={22} x2={278} y2={74} />
 
       {/* Booth Partition Screens extending upwards from horizontal green divider */}
-      <PartitionScreen x1={108} y1={120} x2={108} y2={170} />
-      <PartitionScreen x1={172} y1={120} x2={172} y2={170} />
+      <PartitionScreen x1={120} y1={120} x2={120} y2={170} />
+      <PartitionScreen x1={182} y1={120} x2={182} y2={170} />
       <PartitionScreen x1={236} y1={120} x2={236} y2={170} />
       <PartitionScreen x1={300} y1={120} x2={300} y2={170} />
 
@@ -209,80 +209,86 @@ export function RestaurantLayout() {
       ))}
 
       {/* Right Wall Waiting Area Lounge Suite (Below Table 5) */}
-      <g pointerEvents="none">
-        {/* Waiting Lounge Rug / Floor Boundary */}
-        <rect
-          x={376}
-          y={204}
-          width={68}
-          height={108}
-          rx={4}
-          fill="#f3efe6"
-          stroke="#ded6c5"
-          strokeWidth="0.9"
-          strokeDasharray="3 2"
-        />
+   <g pointerEvents="none">
+  {/* Waiting Lounge Rug / Floor Boundary */}
+  <rect
+    x={361}
+    y={204}
+    width={68}
+    height={108}
+    rx={4}
+    fill="#f3efe6"
+    stroke="#ded6c5"
+    strokeWidth="0.9"
+    strokeDasharray="3 2"
+  />
 
-        {/* Top 3-Seater Lounge Sofa */}
-        <g>
-          {/* Base frame */}
-          <rect x={379} y={207} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
-          {/* Top backrest */}
-          <rect x={380} y={208} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
-          {/* 3 Plush Cushions */}
-          {[0, 1, 2].map((i) => (
-            <rect
-              key={`top-cush-${i}`}
-              x={382.5 + i * 18}
-              y={213}
-              width={17}
-              height={9.5}
-              rx={1.5}
-              fill="#f9f5ec"
-              stroke="#c4b59b"
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* Armrests */}
-          <rect x={379} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-          <rect x={437.5} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-        </g>
+  {/* Top 3-Seater Lounge Sofa */}
+  <g>
+    {/* Base frame */}
+    <rect x={364} y={207} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
 
-        {/* Center Lounge Coffee Table */}
-        <g>
-          <ellipse cx={410} cy={258} rx={24} ry={14} fill="#faf7f0" stroke={GOLD_DARK} strokeWidth="1.2" />
-          <ellipse cx={410} cy={258} rx={20} ry={11} fill="#ede3ce" stroke="#d2be98" strokeWidth="0.7" />
-          <circle cx={410} cy={258} r={2.2} fill="#7da395" stroke="#48685d" strokeWidth="0.6" />
-        </g>
+    {/* Top backrest */}
+    <rect x={365} y={208} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
 
-        {/* Bottom 3-Seater Lounge Sofa */}
-        <g>
-          {/* Base frame */}
-          <rect x={379} y={293} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
-          {/* Bottom backrest */}
-          <rect x={380} y={303.5} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
-          {/* 3 Plush Cushions */}
-          {[0, 1, 2].map((i) => (
-            <rect
-              key={`bot-cush-${i}`}
-              x={382.5 + i * 18}
-              y={294}
-              width={17}
-              height={9.5}
-              rx={1.5}
-              fill="#f9f5ec"
-              stroke="#c4b59b"
-              strokeWidth="0.8"
-            />
-          ))}
-          {/* Armrests */}
-          <rect x={379} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-          <rect x={437.5} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-        </g>
-      </g>
+    {/* 3 Plush Cushions */}
+    {[0, 1, 2].map((i) => (
+      <rect
+        key={`top-cush-${i}`}
+        x={367.5 + i * 18}
+        y={213}
+        width={17}
+        height={9.5}
+        rx={1.5}
+        fill="#f9f5ec"
+        stroke="#c4b59b"
+        strokeWidth="0.8"
+      />
+    ))}
+
+    {/* Armrests */}
+    <rect x={364} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+    <rect x={422.5} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+  </g>
+
+  {/* Center Lounge Coffee Table */}
+  <g>
+    <ellipse cx={395} cy={258} rx={24} ry={14} fill="#faf7f0" stroke={GOLD_DARK} strokeWidth="1.2" />
+    <ellipse cx={395} cy={258} rx={20} ry={11} fill="#ede3ce" stroke="#d2be98" strokeWidth="0.7" />
+    <circle cx={395} cy={258} r={2.2} fill="#7da395" stroke="#48685d" strokeWidth="0.6" />
+  </g>
+
+  {/* Bottom 3-Seater Lounge Sofa */}
+  <g>
+    {/* Base frame */}
+    <rect x={364} y={293} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
+
+    {/* Bottom backrest */}
+    <rect x={365} y={303.5} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
+
+    {/* 3 Plush Cushions */}
+    {[0, 1, 2].map((i) => (
+      <rect
+        key={`bot-cush-${i}`}
+        x={367.5 + i * 18}
+        y={294}
+        width={17}
+        height={9.5}
+        rx={1.5}
+        fill="#f9f5ec"
+        stroke="#c4b59b"
+        strokeWidth="0.8"
+      />
+    ))}
+
+    {/* Armrests */}
+    <rect x={364} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+    <rect x={422.5} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+  </g>
+</g>
 
       {/* Service Station Credenza along the vertical divider */}
-      <ServiceCredenza x={325} y={185} />
+      {/* <ServiceCredenza x={325} y={185} /> */}
 
       {/* Wash Station (Double basin vanity above restroom on left wall) */}
       <WashStation x={46} y={195} />
@@ -297,35 +303,35 @@ export function RestaurantLayout() {
       <BarCounter x={192} y={236} />
 
       {/* Hostess & Cashier Desk at bottom right */}
-      <HostessDesk x={326} y={432} />
+      <HostessDesk x={326} y={470} />
 
       {/* Architectural Structural Columns with Diagonal 'X' Cross (CAD Standard) */}
       {/* Top Wall Columns */}
-      <Column x={28} y={22} />
-      <Column x={232} y={22} />
-      <Column x={326} y={22} />
+      {/* <Column x={28} y={22} /> */}
+      {/* <Column x={232} y={22} /> */}
+      {/* <Column x={326} y={22} /> */}
 
       {/* Left Wall Columns */}
-      <Column x={28} y={140} />
+      {/* <Column x={28} y={140} />
       <Column x={28} y={254} />
-      <Column x={28} y={308} />
+      <Column x={28} y={308} /> */}
 
       {/* Restroom Inner Corner Columns */}
-      <Column x={105} y={254} />
-      <Column x={105} y={340} />
+      {/* <Column x={105} y={254} />
+      <Column x={105} y={340} /> */}
 
       {/* Bar Counter Perimeter Columns */}
-      <Column x={188} y={254} />
+      {/* <Column x={188} y={254} />
       <Column x={188} y={340} />
-      <Column x={188} y={430} />
+      <Column x={188} y={430} /> */}
 
       {/* Lower Banquet Room Columns */}
-      <Column x={188} y={546} />
+      {/* <Column x={188} y={546} />
       <Column x={434} y={546} />
-      <Column x={400} y={430} />
+      <Column x={400} y={430} /> */}
 
       {/* Right Perimeter Column */}
-      <Column x={434} y={380} />
+      {/* <Column x={434} y={380} /> */}
 
       {/* Floor Plan Header Label */}
       <text
