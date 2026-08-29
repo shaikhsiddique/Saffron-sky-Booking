@@ -50,27 +50,33 @@ export const RESTAURANT_TABLES: FloorTable[] = [
   { id: 'R16', number: 16, capacity: 4, section: 'restaurant', shape: 'booth', x: 300, y: 365, w: 34, h: 20, isAvailable: true, image: PHOTO },
 
   // Lounge Suite in Corner Alcove: Table 19 (8 seats)
-  { id: 'R19', number: 19, capacity: 8, section: 'restaurant', shape: 'booth', x: 152, y: 268, w: 58, h: 42, isAvailable: true, image: PHOTO },
+  { id: 'R10', number: 10, capacity: 8, section: 'restaurant', shape: 'booth', x: 152, y: 268, w: 58, h: 42, isAvailable: true, image: PHOTO },
 
   // Boardroom / Banquet Table at Bottom: Table 20 (11 seats)
   { id: 'R17', number: 17, capacity: 8, section: 'restaurant', shape: 'oval', x: 245, y: 482, w: 105, h: 32, isAvailable: true, image: PHOTO },
 ];
 
 export const GARDEN_TABLES: FloorTable[] = [
-  { id: 'G1', number: 1, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 785, w: 34, h: 22, isAvailable: true, image: PHOTO },
-  { id: 'G2', number: 2, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 900, w: 34, h: 22, isAvailable: true, image: PHOTO },
-  { id: 'G3', number: 3, capacity: 4, section: 'garden', shape: 'booth', x: 195, y: 1015, w: 34, h: 22, isAvailable: true, image: PHOTO },
+  // Left wall: 3 vertical booths (capacity 6) — sofa against west wall, chairs east
+  { id: 'G1', number: 1, capacity: 6, section: 'garden', shape: 'booth', x: 177, y: 760, w: 20, h: 36, isAvailable: true, sofaSide: 'w', image: PHOTO },
+  { id: 'G2', number: 2, capacity: 6, section: 'garden', shape: 'booth', x: 177, y: 868, w: 20, h: 36, isAvailable: true, sofaSide: 'w', image: PHOTO },
+  { id: 'G3', number: 3, capacity: 6, section: 'garden', shape: 'booth', x: 177, y: 976, w: 20, h: 36, isAvailable: true, sofaSide: 'w', image: PHOTO },
 
-  { id: 'G4', number: 4, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 810, w: 38, h: 38, isAvailable: true, image: PHOTO },
-  { id: 'G5', number: 5, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 930, w: 38, h: 38, isAvailable: true, image: PHOTO },
-  { id: 'G6', number: 6, capacity: 6, section: 'garden', shape: 'circle', x: 275, y: 1050, w: 38, h: 38, isAvailable: true, image: PHOTO },
-  { id: 'G7', number: 7, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 810, w: 38, h: 38, isAvailable: true, image: PHOTO },
-  { id: 'G8', number: 8, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 930, w: 38, h: 38, isAvailable: true, image: PHOTO },
-  { id: 'G9', number: 9, capacity: 6, section: 'garden', shape: 'circle', x: 345, y: 1050, w: 38, h: 38, isAvailable: true, image: PHOTO },
+  // Middle-left column: 2 square 4-seat tables (staggered — between rows of center col)
+  { id: 'G4', number: 4, capacity: 4, section: 'garden', shape: 'square', x: 237, y: 862, w: 30, h: 24, isAvailable: true, image: PHOTO },
+  { id: 'G5', number: 5, capacity: 4, section: 'garden', shape: 'square', x: 237, y: 970, w: 30, h: 24, isAvailable: true, image: PHOTO },
 
-  { id: 'G10', number: 10, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 790, w: 36, h: 22, isAvailable: true, image: PHOTO },
-  { id: 'G11', number: 11, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 905, w: 36, h: 22, isAvailable: true, image: PHOTO },
-  { id: 'G12', number: 12, capacity: 4, section: 'garden', shape: 'booth', x: 378, y: 1020, w: 36, h: 22, isAvailable: true, image: PHOTO },
+  // Center column: 3 square 4-seat tables
+  { id: 'G6', number: 6, capacity: 4, section: 'garden', shape: 'square', x: 282, y: 803, w: 30, h: 24, isAvailable: true, image: PHOTO },
+  { id: 'G7', number: 7, capacity: 4, section: 'garden', shape: 'square', x: 282, y: 905, w: 30, h: 24, isAvailable: true, image: PHOTO },
+  { id: 'G8', number: 8, capacity: 4, section: 'garden', shape: 'square', x: 282, y: 1007, w: 30, h: 24, isAvailable: true, image: PHOTO },
+
+  // Right column: 3 wide rectangular 6-seat tables
+  { id: 'G9', number: 9, capacity: 6, section: 'garden', shape: 'square', x: 388, y: 833, w: 44, h: 24, isAvailable: true, image: PHOTO },
+  { id: 'G10', number: 10, capacity: 6, section: 'garden', shape: 'square', x: 388, y: 900, w: 44, h: 24, isAvailable: true, image: PHOTO },
+  { id: 'G11', number: 11, capacity: 6, section: 'garden', shape: 'square', x: 388, y: 975, w: 44, h: 24, isAvailable: true, image: PHOTO },
+
+
 ];
 
 export const ALL_TABLES = [...RESTAURANT_TABLES, ...GARDEN_TABLES];

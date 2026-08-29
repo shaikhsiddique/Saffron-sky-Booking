@@ -124,9 +124,9 @@ export function RenderTable({
         {selected && (
           <rect
             x={t.x - 32}
-            y={t.y - 24}
+            y={t.y - 28}
             width={64}
-            height={48}
+            height={56}
             rx={4}
             fill="#2e7d4f"
             opacity="0.16"

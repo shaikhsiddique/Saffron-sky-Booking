@@ -105,12 +105,12 @@ export function RestaurantLayout() {
   return (
     <g id="restaurant-dining-layout">
       {/* Background Floor Fill */}
-      <rect width="560" height="570" fill="#f5f5f0" />
+      <rect width="590" height="570" fill="#f5f5f0" />
 
       {/* Main Structural Outer Black Walls according to architectural blueprint */}
       <path
         d={`
-          M 28 20
+          M 0 20
           L 326 20
           Q 388 20 424 64
           Q 434 100 434 165
@@ -119,7 +119,7 @@ export function RestaurantLayout() {
           L 188 340
           L 105 340
           L 105 308
-          L 28 308
+          L 0 308
           Z
         `}
         fill="#ffffff"
@@ -135,13 +135,13 @@ export function RestaurantLayout() {
         stroke={WALL}
         strokeWidth="3.5"
       />
-     
-     <path 
-  d="M 300 430 L 300 548" 
-  fill="none" 
-  stroke={WALL} 
-  strokeWidth="3.5" 
-/>
+
+      <path
+        d="M 300 430 L 300 548"
+        fill="none"
+        stroke={WALL}
+        strokeWidth="3.5"
+      />
       {/* Lower Room Entrance Door with 90 deg swing arc */}
       <g>
         <path
@@ -209,83 +209,83 @@ export function RestaurantLayout() {
       ))}
 
       {/* Right Wall Waiting Area Lounge Suite (Below Table 5) */}
-   <g pointerEvents="none">
-  {/* Waiting Lounge Rug / Floor Boundary */}
-  <rect
-    x={361}
-    y={204}
-    width={68}
-    height={108}
-    rx={4}
-    fill="#f3efe6"
-    stroke="#ded6c5"
-    strokeWidth="0.9"
-    strokeDasharray="3 2"
-  />
+      <g pointerEvents="none">
+        {/* Waiting Lounge Rug / Floor Boundary */}
+        <rect
+          x={361}
+          y={204}
+          width={68}
+          height={108}
+          rx={4}
+          fill="#f3efe6"
+          stroke="#ded6c5"
+          strokeWidth="0.9"
+          strokeDasharray="3 2"
+        />
 
-  {/* Top 3-Seater Lounge Sofa */}
-  <g>
-    {/* Base frame */}
-    <rect x={364} y={207} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
+        {/* Top 3-Seater Lounge Sofa */}
+        <g>
+          {/* Base frame */}
+          <rect x={364} y={207} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
 
-    {/* Top backrest */}
-    <rect x={365} y={208} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
+          {/* Top backrest */}
+          <rect x={365} y={208} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
 
-    {/* 3 Plush Cushions */}
-    {[0, 1, 2].map((i) => (
-      <rect
-        key={`top-cush-${i}`}
-        x={367.5 + i * 18}
-        y={213}
-        width={17}
-        height={9.5}
-        rx={1.5}
-        fill="#f9f5ec"
-        stroke="#c4b59b"
-        strokeWidth="0.8"
-      />
-    ))}
+          {/* 3 Plush Cushions */}
+          {[0, 1, 2].map((i) => (
+            <rect
+              key={`top-cush-${i}`}
+              x={367.5 + i * 18}
+              y={213}
+              width={17}
+              height={9.5}
+              rx={1.5}
+              fill="#f9f5ec"
+              stroke="#c4b59b"
+              strokeWidth="0.8"
+            />
+          ))}
 
-    {/* Armrests */}
-    <rect x={364} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-    <rect x={422.5} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-  </g>
+          {/* Armrests */}
+          <rect x={364} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+          <rect x={422.5} y={209} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+        </g>
 
-  {/* Center Lounge Coffee Table */}
-  <g>
-    <ellipse cx={395} cy={258} rx={24} ry={14} fill="#faf7f0" stroke={GOLD_DARK} strokeWidth="1.2" />
-    <ellipse cx={395} cy={258} rx={20} ry={11} fill="#ede3ce" stroke="#d2be98" strokeWidth="0.7" />
-    <circle cx={395} cy={258} r={2.2} fill="#7da395" stroke="#48685d" strokeWidth="0.6" />
-  </g>
+        {/* Center Lounge Coffee Table */}
+        <g>
+          <ellipse cx={395} cy={258} rx={24} ry={14} fill="#faf7f0" stroke={GOLD_DARK} strokeWidth="1.2" />
+          <ellipse cx={395} cy={258} rx={20} ry={11} fill="#ede3ce" stroke="#d2be98" strokeWidth="0.7" />
+          <circle cx={395} cy={258} r={2.2} fill="#7da395" stroke="#48685d" strokeWidth="0.6" />
+        </g>
 
-  {/* Bottom 3-Seater Lounge Sofa */}
-  <g>
-    {/* Base frame */}
-    <rect x={364} y={293} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
+        {/* Bottom 3-Seater Lounge Sofa */}
+        <g>
+          {/* Base frame */}
+          <rect x={364} y={293} width={62} height={16} rx={3} fill="url(#tuft-lounge)" stroke={TAUPE} strokeWidth="1.1" />
 
-    {/* Bottom backrest */}
-    <rect x={365} y={303.5} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
+          {/* Bottom backrest */}
+          <rect x={365} y={303.5} width={60} height={4.5} rx={1.2} fill="#d8cbb5" stroke="#b2a288" strokeWidth="0.8" />
 
-    {/* 3 Plush Cushions */}
-    {[0, 1, 2].map((i) => (
-      <rect
-        key={`bot-cush-${i}`}
-        x={367.5 + i * 18}
-        y={294}
-        width={17}
-        height={9.5}
-        rx={1.5}
-        fill="#f9f5ec"
-        stroke="#c4b59b"
-        strokeWidth="0.8"
-      />
-    ))}
+          {/* 3 Plush Cushions */}
+          {[0, 1, 2].map((i) => (
+            <rect
+              key={`bot-cush-${i}`}
+              x={367.5 + i * 18}
+              y={294}
+              width={17}
+              height={9.5}
+              rx={1.5}
+              fill="#f9f5ec"
+              stroke="#c4b59b"
+              strokeWidth="0.8"
+            />
+          ))}
 
-    {/* Armrests */}
-    <rect x={364} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-    <rect x={422.5} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
-  </g>
-</g>
+          {/* Armrests */}
+          <rect x={364} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+          <rect x={422.5} y={294} width={3.5} height={13.5} rx={1.2} fill="#d2c3aa" stroke="#9e8f77" strokeWidth="0.7" />
+        </g>
+      </g>
 
       {/* Service Station Credenza along the vertical divider */}
       {/* <ServiceCredenza x={325} y={185} /> */}
