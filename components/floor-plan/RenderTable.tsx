@@ -124,9 +124,9 @@ export function RenderTable({
         {selected && (
           <rect
             x={t.x - 32}
-            y={t.y - 28}
+            y={t.y - 24}
             width={64}
-            height={56}
+            height={48}
             rx={4}
             fill="#2e7d4f"
             opacity="0.16"
@@ -208,7 +208,7 @@ export function RenderTable({
       </g>
     );
   }
-
+  
   return (
     <g {...common}>
       {sofa && <WallBanquette x={t.x} y={t.y} w={tw} h={th} side={sofa} selected={selected} />}
