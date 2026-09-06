@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
@@ -489,7 +488,6 @@ export default function BookingPage() {
             <SectionTabs
               section={section}
               selectedTable={selectedTable}
-              tables={activeTables}
               onSectionChange={handleSection}
             />
 
