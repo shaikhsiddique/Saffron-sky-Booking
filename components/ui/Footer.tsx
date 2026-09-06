@@ -17,7 +17,7 @@ function Footer() {
             <div className="relative overflow-hidden">
               <div className="aspect-[4/3] overflow-hidden rounded-sm bg-[#e8e1d4]">
                 <img
-                  src="https://images.unsplash.com/photo-1517457373614-b7152f800fd1?w=1200&auto=format&fit=crop"
+                  src="https://res.cloudinary.com/daai6xwtd/image/upload/v1788697794/IMG_20260831_141319_la6p85.jpg"
                   alt="Saffron Sky Rooftop Multi Cuisine Fine Dine"
                   className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
                 />
@@ -55,7 +55,7 @@ function Footer() {
               </p>
 
               <Link
-                href="/booking"
+                href="#booking"
                 className="inline-flex items-center gap-5 border border-[#24231f] px-7 py-3.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[#24231f] transition-all duration-300 hover:bg-[#24231f] hover:text-white"
               >
                 Reserve a Table
@@ -111,9 +111,8 @@ function Footer() {
                 </Link>
 
                 <Link
-                  href="/booking"
-                  className="w-fit text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
-                >
+                className="w-fit text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
+                 href={"#booking"}>
                   Reserve a Table
                 </Link>
 

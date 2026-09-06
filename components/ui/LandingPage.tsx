@@ -82,12 +82,7 @@ function LandingPage({ onBookClick: _onBookClick }: LandingPageProps) {
             {/* Logo */}
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/60 sm:h-12 sm:w-12">
 
-              <span
-                className="text-[11px] tracking-[0.18em] text-white sm:text-[13px]"
-                style={{ fontFamily: 'Georgia, serif' }}
-              >
-                SS
-              </span>
+             <img src="https://res.cloudinary.com/daai6xwtd/image/upload/v1788693788/WhatsApp_Image_2026-09-06_at_15.26.26-removebg-preview_ddb5ug.png" alt="" />
 
             </div>
 

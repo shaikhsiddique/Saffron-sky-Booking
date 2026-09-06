@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
@@ -448,6 +449,7 @@ export default function BookingPage() {
           'Unknown error'
         }`
       );
+
     } finally {
       setLoading(false);
     }
@@ -463,18 +465,26 @@ export default function BookingPage() {
 
       <LandingPage />
 
+
       <div className="mx-auto my-[10vh] w-full max-w-[1520px] p-3 sm:p-4 md:p-6 lg:p-8">
 
         <BookingHeader />
 
 
-        <div className="grid w-full grid-cols-1 gap-4 sm:gap-5 lg:gap-6 2xl:grid-cols-[minmax(0,1fr)_420px]">
+        {/* =================================================
+            RESPONSIVE BOOKING AREA
+            MOBILE/TABLET = STACKED
+            LAPTOP/DESKTOP = SIDE BY SIDE
+        ================================================= */}
+
+        <div  className="mt-5 flex w-full flex-col-reverse  gap-4 sm:gap-5 lg:mt-6 lg:flex-row lg:items-start lg:gap-6">
+
 
           {/* =================================================
               FLOOR PLAN
           ================================================= */}
 
-          <section className="min-w-0 w-full overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4">
+          <section id='booking' className="min-w-0 w-full overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4 lg:flex-1">
 
             <SectionTabs
               section={section}
@@ -484,7 +494,7 @@ export default function BookingPage() {
             />
 
 
-            <div className="my-4 w-full min-w-0 overflow-hidden">
+            <div  className="my-4 w-full min-w-0 overflow-hidden sm:my-5">
 
               <FloorPlanSVG
                 section={section}
@@ -507,7 +517,7 @@ export default function BookingPage() {
               BOOKING FORM
           ================================================= */}
 
-          <div className="w-full min-w-0">
+          <div className="w-full min-w-0 lg:w-[420px] lg:flex-shrink-0">
 
             <BookingForm
               guestName={guestName}
@@ -528,6 +538,7 @@ export default function BookingPage() {
             />
 
           </div>
+
 
         </div>
 

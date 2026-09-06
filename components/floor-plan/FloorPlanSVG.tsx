@@ -213,8 +213,8 @@ export function FloorPlanSVG({
 <div className="w-full overflow-hidden">
   <svg
     viewBox={view.box}
-    width={500}
-    height={570}
+    width={800}
+    height={870}
     className="mx-auto block select-none "
     style={{
       maxWidth: "100%",

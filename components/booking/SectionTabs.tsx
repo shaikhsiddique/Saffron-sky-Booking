@@ -12,9 +12,9 @@ export function SectionTabs({
 }) {
   const sectionImage =
     section === 'restaurant'
-      ? '/gallery/restaurant.jpg'
-      : '/gallery/garden.jpg';
-  console.log(selectedTable)
+      ? 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697767/restaurant_yvohsy.jpg'
+      : 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697752/garden_qe3zkg.jpg';
+  
   return (
     <div className="mb-4 w-full">
       {/* SECTION BUTTONS */}

@@ -111,7 +111,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     h: 24,
     isAvailable: true,
     sofaSide: 'n',
-    image: tableImage('restaurant', 1),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695014/r1_oclpxr.jpg",
   },
 
   {
@@ -126,7 +126,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     h: 24,
     isAvailable: true,
     sofaSide: 'n',
-    image: tableImage('restaurant', 2),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695916/r2_xyvxer.jpg",
   },
 
   {
@@ -140,7 +140,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 24,
     h: 54,
     isAvailable: true,
-    image: tableImage('restaurant', 3),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695910/r3_d5jyvn.jpg",
   },
 
   {
@@ -155,7 +155,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     h: 72,
     isAvailable: true,
     facing: 'nw',
-    image: tableImage('restaurant', 4),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696094/r4_ztzeni.jpg",
   },
 
 
@@ -176,7 +176,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     h: 72,
     isAvailable: true,
     facing: 'se',
-    image: tableImage('restaurant', 5),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696113/r5_zmsk0y.jpg",
   },
 
 
@@ -196,7 +196,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 9),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788697034/r9_pjtwnm.jpg",
   },
 
   {
@@ -210,7 +210,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 8),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696108/r8_urjgx5.jpg",
   },
 
   {
@@ -224,7 +224,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 7),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696114/r7_mqjzz2.jpg",
   },
 
   {
@@ -238,7 +238,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 6),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788697034/r6_u0mel6.jpg",
   },
 
 
@@ -258,7 +258,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 11),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695452/r11_q0dtjr.jpg",
   },
 
   {
@@ -272,7 +272,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 12),
+    image:"https://res.cloudinary.com/daai6xwtd/image/upload/v1788697023/r12_qkabmv.jpg",
   },
 
   {
@@ -286,7 +286,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 13),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788697021/r13_uod4uq.jpg",
   },
 
 
@@ -306,7 +306,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 34,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 14),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695294/r14_qgklbl.jpg",
   },
 
   {
@@ -320,7 +320,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 34,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 15),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788697077/r15_v03dry.jpg",
   },
 
   {
@@ -334,7 +334,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 34,
     h: 20,
     isAvailable: true,
-    image: tableImage('restaurant', 16),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696920/r16_qs8470.jpg",
   },
 
 
@@ -354,7 +354,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 58,
     h: 42,
     isAvailable: true,
-    image: tableImage('restaurant', 10),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696114/r7_mqjzz2.jpg",
   },
 
 
@@ -364,8 +364,8 @@ export const RESTAURANT_TABLES: FloorTable[] = [
   // -------------------------------------------------------
 
   {
-    id: 'R17',
-    number: 17,
+    id: 'R20',
+    number: 20,
     capacity: 8,
     section: 'restaurant',
     shape: 'oval',
@@ -374,7 +374,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 105,
     h: 32,
     isAvailable: true,
-    image: tableImage('restaurant', 17),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695357/r10_szsxle.jpg",
   },
 ];
 
@@ -391,8 +391,8 @@ export const GARDEN_TABLES: FloorTable[] = [
   // -------------------------------------------------------
 
   {
-    id: 'G1',
-    number: 1,
+    id: 'G11',
+    number: 11,
     capacity: 6,
     section: 'garden',
     shape: 'booth',
@@ -402,12 +402,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     h: 36,
     isAvailable: true,
     sofaSide: 'w',
-    image: tableImage('garden', 1),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788694435/g1_akxi5p.jpg",
   },
 
   {
-    id: 'G2',
-    number: 2,
+    id: 'G10',
+    number: 10,
     capacity: 6,
     section: 'garden',
     shape: 'booth',
@@ -417,12 +417,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     h: 36,
     isAvailable: true,
     sofaSide: 'w',
-    image: tableImage('garden', 2),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788694991/g2_kt24zv.jpg",
   },
 
   {
-    id: 'G3',
-    number: 3,
+    id: 'G9',
+    number: 9,
     capacity: 6,
     section: 'garden',
     shape: 'booth',
@@ -432,7 +432,7 @@ export const GARDEN_TABLES: FloorTable[] = [
     h: 36,
     isAvailable: true,
     sofaSide: 'w',
-    image: tableImage('garden', 3),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695008/g3_vznkym.jpg",
   },
 
 
@@ -442,8 +442,8 @@ export const GARDEN_TABLES: FloorTable[] = [
   // -------------------------------------------------------
 
   {
-    id: 'G4',
-    number: 4,
+    id: 'G7',
+    number: 7,
     capacity: 4,
     section: 'garden',
     shape: 'square',
@@ -452,12 +452,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 30,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 4),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788694950/g4_aceiab.jpg",
   },
 
   {
-    id: 'G5',
-    number: 5,
+    id: 'G8',
+    number: 8,
     capacity: 4,
     section: 'garden',
     shape: 'square',
@@ -466,7 +466,7 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 30,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 5),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695006/g5_l2wd5l.jpg",
   },
 
 
@@ -486,12 +486,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 30,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 6),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788694812/g6_xeb2yp.jpg",
   },
 
   {
-    id: 'G7',
-    number: 7,
+    id: 'G5',
+    number: 5,
     capacity: 4,
     section: 'garden',
     shape: 'square',
@@ -500,12 +500,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 30,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 7),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788696066/g7_ymvfmf.jpg",
   },
 
   {
-    id: 'G8',
-    number: 8,
+    id: 'G4',
+    number: 4,
     capacity: 4,
     section: 'garden',
     shape: 'square',
@@ -514,7 +514,7 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 30,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 8),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695015/g8_ytemhk.jpg",
   },
 
 
@@ -524,8 +524,8 @@ export const GARDEN_TABLES: FloorTable[] = [
   // -------------------------------------------------------
 
   {
-    id: 'G9',
-    number: 9,
+    id: 'G1',
+    number: 1,
     capacity: 6,
     section: 'garden',
     shape: 'square',
@@ -534,12 +534,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 44,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 9),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695963/g9_vc77ga.jpg",
   },
 
   {
-    id: 'G10',
-    number: 10,
+    id: 'G2',
+    number: 2,
     capacity: 6,
     section: 'garden',
     shape: 'square',
@@ -548,12 +548,12 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 44,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 10),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695996/g10_dh6fmg.jpg",
   },
 
   {
-    id: 'G11',
-    number: 11,
+    id: 'G3',
+    number: 3,
     capacity: 6,
     section: 'garden',
     shape: 'square',
@@ -562,7 +562,7 @@ export const GARDEN_TABLES: FloorTable[] = [
     w: 44,
     h: 24,
     isAvailable: true,
-    image: tableImage('garden', 11),
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788695923/g11_d2vzg4.jpg",
   },
 ];
 

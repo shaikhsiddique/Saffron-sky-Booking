@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import {
@@ -6,10 +7,6 @@ import {
 } from '@/lib/tables';
 
 export async function GET(request: NextRequest) {
-  console.log('\n========================================');
-  console.log('🪑 GET /api/tables');
-  console.log('========================================');
-
   try {
     const { searchParams } = new URL(request.url);
 
@@ -20,13 +17,7 @@ export async function GET(request: NextRequest) {
         ? 'garden'
         : 'restaurant';
 
-    console.log('📅 Date:', date);
-    console.log('⏰ Time slot:', timeSlot);
-    console.log('🏠 Section:', section);
-
     if (!date) {
-      console.error('❌ No date supplied');
-
       return NextResponse.json(
         {
           success: false,
@@ -37,8 +28,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!timeSlot) {
-      console.error('❌ No time slot supplied');
-
       return NextResponse.json(
         {
           success: false,
@@ -53,50 +42,17 @@ export async function GET(request: NextRequest) {
         ? GARDEN_TABLES
         : RESTAURANT_TABLES;
 
-    console.log(
-      `🪑 Checking ${tables.length} ${section} tables`
-    );
-
     const db = await getDatabase();
-
-    console.log('✅ MongoDB connection successful');
-    console.log('🗄️ Database:', db.databaseName);
 
     const bookingsCollection =
       db.collection('bookings');
 
-    console.log(
-      '📂 Collection:',
-      bookingsCollection.collectionName
-    );
-
     const now = new Date();
-
-    console.log(
-      '⏰ Current server time:',
-      now.toISOString()
-    );
-
-    console.log('🧹 Checking for expired bookings...');
 
     const deleteResult =
       await bookingsCollection.deleteMany({
         expiresAt: { $lte: now },
       });
-
-    console.log('🧹 Expired booking cleanup:', {
-      acknowledged: deleteResult.acknowledged,
-      deletedCount: deleteResult.deletedCount,
-    });
-
-    console.log(
-      '🔎 Checking bookings for EXACT:',
-      {
-        date,
-        timeSlot,
-        section,
-      }
-    );
 
     const bookings =
       await bookingsCollection
@@ -108,31 +64,8 @@ export async function GET(request: NextRequest) {
         })
         .toArray();
 
-    console.log(
-      `📊 Matching active bookings found: ${bookings.length}`
-    );
-
-    if (bookings.length > 0) {
-      console.log(
-        '📋 Matching bookings:',
-        bookings.map((booking: any) => ({
-          id: booking.id,
-          tableId: booking.tableId,
-          date: booking.date,
-          timeSlot: booking.timeSlot,
-          section: booking.section,
-          expiresAt: booking.expiresAt,
-        }))
-      );
-    }
-
     const bookedTableIds = bookings.map(
       (booking: any) => booking.tableId
-    );
-
-    console.log(
-      '🔴 BOOKED TABLE IDS:',
-      bookedTableIds
     );
 
     const tablesWithAvailability =
@@ -145,13 +78,6 @@ export async function GET(request: NextRequest) {
 
         const isAvailable =
           !matchingBooking;
-
-        console.log(
-          `🪑 ${table.id}: ${isAvailable
-            ? '🟢 AVAILABLE'
-            : '🔴 BOOKED'
-          }`
-        );
 
         return {
           ...table,
@@ -174,29 +100,6 @@ export async function GET(request: NextRequest) {
       tablesWithAvailability.length -
       bookedCount;
 
-    console.log('\n📤 AVAILABILITY RESPONSE');
-
-    console.log({
-      date,
-      timeSlot,
-      section,
-      totalTables: tables.length,
-      bookedCount,
-      availableCount,
-      expiredBookingsDeleted:
-        deleteResult.deletedCount,
-    });
-
-    console.log(
-      '========================================'
-    );
-    console.log(
-      '✅ GET /api/tables COMPLETE'
-    );
-    console.log(
-      '========================================\n'
-    );
-
     return NextResponse.json({
       success: true,
       date,
@@ -211,17 +114,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('\n========================================');
-    console.error('🔥 TABLE AVAILABILITY ERROR');
-    console.error('========================================');
-
-    console.error('Error:', error);
-    console.error('Message:', error?.message);
-    console.error('Stack:', error?.stack);
-
-    console.error(
-      '========================================\n'
-    );
+    console.error('Table availability error:', error?.message);
 
     return NextResponse.json(
       {
