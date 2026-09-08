@@ -44,6 +44,28 @@ export async function GET(request: NextRequest) {
 
     const db = await getDatabase();
 
+    // Check if bookings are disabled or this date is blocked
+    const settingsCollection = db.collection<any>('settings');
+    const settings = await settingsCollection.findOne({ _id: 'booking_settings' });
+    const isMasterDisabled = settings?.isBookingEnabled === false;
+    const isSectionDisabled = section === 'restaurant'
+      ? (settings?.isRestaurantEnabled === false)
+      : (settings?.isGardenEnabled === false);
+    const isDateBlocked = Array.isArray(settings?.blockedDates) && settings.blockedDates.includes(date);
+    const isBookingBlocked = isMasterDisabled || isSectionDisabled || isDateBlocked;
+
+    let blockReason = '';
+    if (isMasterDisabled) {
+      blockReason = settings?.reason || 'Online bookings are currently paused by management.';
+    } else if (isSectionDisabled) {
+      const sectionMsg = section === 'restaurant'
+        ? (settings?.restaurantMessage || 'Restaurant dine-in bookings are currently closed.')
+        : (settings?.gardenMessage || 'Garden dine-in bookings are currently closed.');
+      blockReason = sectionMsg;
+    } else if (isDateBlocked) {
+      blockReason = `Reservations are closed for ${date}.`;
+    }
+
     const bookingsCollection =
       db.collection('bookings');
 
@@ -54,15 +76,16 @@ export async function GET(request: NextRequest) {
         expiresAt: { $lte: now },
       });
 
-    const bookings =
-      await bookingsCollection
-        .find({
-          date,
-          timeSlot,
-          section,
-          expiresAt: { $gt: now },
-        })
-        .toArray();
+    const bookings = isBookingBlocked
+      ? []
+      : await bookingsCollection
+          .find({
+            date,
+            timeSlot,
+            section,
+            expiresAt: { $gt: now },
+          })
+          .toArray();
 
     const bookedTableIds = bookings.map(
       (booking: any) => booking.tableId
@@ -70,6 +93,15 @@ export async function GET(request: NextRequest) {
 
     const tablesWithAvailability =
       tables.map((table) => {
+        if (isBookingBlocked) {
+          return {
+            ...table,
+            isAvailable: false,
+            bookedUntil: null,
+            bookingId: null,
+          };
+        }
+
         const matchingBooking =
           bookings.find(
             (booking: any) =>
@@ -105,6 +137,8 @@ export async function GET(request: NextRequest) {
       date,
       timeSlot,
       section,
+      isBookingBlocked,
+      blockReason,
       tables: tablesWithAvailability,
       totalTables: tables.length,
       bookedCount,

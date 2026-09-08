@@ -35,6 +35,10 @@ export default function BookingPage() {
 
   const [bookedTableIds, setBookedTableIds] = useState<string[]>([]);
 
+  const [isBookingEnabled, setIsBookingEnabled] = useState(true);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [bookingPauseReason, setBookingPauseReason] = useState('');
+
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const guestCount = adults + children;
@@ -150,27 +154,42 @@ export default function BookingPage() {
 
 
   // =========================================================
-  // AUTO FETCH AVAILABILITY
+  // FETCH SETTINGS
+  // =========================================================
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+      if (data.success && data.settings) {
+        setIsBookingEnabled(data.settings.isBookingEnabled ?? true);
+        setBlockedDates(
+          Array.isArray(data.settings.blockedDates)
+            ? data.settings.blockedDates
+            : []
+        );
+        setBookingPauseReason(data.settings.reason || '');
+      }
+    } catch (error) {
+      console.warn('Could not load booking settings:', error);
+    }
+  }, []);
+
+
+  // =========================================================
+  // AUTO FETCH AVAILABILITY & SETTINGS
   // =========================================================
 
   useEffect(() => {
     fetchBookedTables();
-  }, [fetchBookedTables]);
+    fetchSettings();
+  }, [fetchBookedTables, fetchSettings]);
 
 
-  // =========================================================
-  // REFRESH EVERY 30 SECONDS
-  // =========================================================
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchBookedTables();
-    }, 30_000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [fetchBookedTables]);
 
 
   // =========================================================
@@ -247,6 +266,24 @@ export default function BookingPage() {
   // =========================================================
 
   const handleSelectTable = (id: string) => {
+    if (!isBookingEnabled) {
+      addToast(
+        'info',
+        'Reservations Paused',
+        bookingPauseReason ||
+          'Online reservations are temporarily paused by management.'
+      );
+      return;
+    }
+
+    if (date && blockedDates.includes(date)) {
+      addToast(
+        'error',
+        'Date Closed',
+        `Reservations are closed for ${date}. Please select another date.`
+      );
+      return;
+    }
 
     // Never allow booked table
     if (bookedTableIds.includes(id)) {
@@ -320,6 +357,24 @@ export default function BookingPage() {
   ) => {
     e.preventDefault();
 
+    if (!isBookingEnabled) {
+      addToast(
+        'error',
+        'Reservations Paused',
+        bookingPauseReason ||
+          'Online reservations are currently paused by management. Please call us directly.'
+      );
+      return;
+    }
+
+    if (date && blockedDates.includes(date)) {
+      addToast(
+        'error',
+        'Date Closed',
+        `Reservations are closed for ${date}. Please choose another date.`
+      );
+      return;
+    }
 
     if (!date) {
       addToast(
@@ -469,6 +524,41 @@ export default function BookingPage() {
 
         <BookingHeader />
 
+        {/* =================================================
+            BOOKING STATUS NOTICES (PAUSED OR BLOCKED DATE)
+        ================================================= */}
+        {!isBookingEnabled && (
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50/95 p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200/70 text-xl font-bold">
+              ⏸️
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-amber-950 sm:text-lg">
+                Online Reservations Temporarily Paused
+              </h3>
+              <p className="mt-0.5 text-xs text-amber-800 sm:text-sm">
+                {bookingPauseReason ||
+                  'Management has temporarily paused online reservations. Please call us directly for table inquiries.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isBookingEnabled && date && blockedDates.includes(date) && (
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rose-300 bg-rose-50/95 p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-200/70 text-xl font-bold">
+              📅
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-rose-950 sm:text-lg">
+                Reservations Closed for {date}
+              </h3>
+              <p className="mt-0.5 text-xs text-rose-800 sm:text-sm">
+                Online reservations are closed for the selected day. Please select a different date to book.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* =================================================
             RESPONSIVE BOOKING AREA
@@ -476,14 +566,14 @@ export default function BookingPage() {
             LAPTOP/DESKTOP = SIDE BY SIDE
         ================================================= */}
 
-        <div  className="mt-5 flex w-full flex-col-reverse  gap-4 sm:gap-5 lg:mt-6 lg:flex-row lg:items-start lg:gap-6">
+        <div className="mt-5 flex w-full flex-col gap-4 sm:gap-5 lg:mt-6 lg:flex-row lg:items-start lg:gap-6">
 
 
           {/* =================================================
-              FLOOR PLAN
+              FLOOR PLAN (desktop right panel – hidden on mobile)
           ================================================= */}
 
-          <section id='booking' className="min-w-0 w-full overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4 lg:flex-1">
+          <section id='booking' className="hidden min-w-0 w-full overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4 lg:flex lg:flex-col lg:flex-1">
 
             <SectionTabs
               section={section}
@@ -492,7 +582,7 @@ export default function BookingPage() {
             />
 
 
-            <div  className="my-4 w-full min-w-0 overflow-hidden sm:my-5">
+            <div className="my-4 w-full min-w-0 overflow-hidden sm:my-5">
 
               <FloorPlanSVG
                 section={section}
@@ -526,6 +616,9 @@ export default function BookingPage() {
               timeSlot={timeSlot}
               selectedTable={selectedTable}
               loading={loading}
+              isBookingEnabled={isBookingEnabled}
+              blockedDates={blockedDates}
+              bookingPauseReason={bookingPauseReason}
               onGuestNameChange={setGuestName}
               onPhoneChange={setPhone}
               onAdultsChange={handleAdultsChange}
@@ -533,6 +626,26 @@ export default function BookingPage() {
               onDateChange={handleDateChange}
               onTimeSlotChange={handleTimeSlotChange}
               onSubmit={handleSubmit}
+              seatLayoutSlot={
+                <section className="overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:p-4">
+                  <SectionTabs
+                    section={section}
+                    selectedTable={selectedTable}
+                    onSectionChange={handleSection}
+                  />
+                  <div className="my-4 w-full min-w-0 overflow-hidden sm:my-5">
+                    <FloorPlanSVG
+                      section={section}
+                      tables={activeTables}
+                      selectedTable={selectedTable}
+                      guestCount={guestCount}
+                      bookedTableIds={bookedTableIds}
+                      onSelect={handleSelectTable}
+                    />
+                  </div>
+                  <FloorPlanLegend />
+                </section>
+              }
             />
 
           </div>

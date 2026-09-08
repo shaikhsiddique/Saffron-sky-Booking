@@ -64,6 +64,19 @@ const SLOT_TIMES: Record<
   },
 };
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
 // ============================================================
 // GET /api/bookings
 // ============================================================
@@ -154,11 +167,14 @@ export async function GET(request: NextRequest) {
       }))
     );
 
-    return NextResponse.json({
-      success: true,
-      bookings,
-      count: bookings.length,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        bookings,
+        count: bookings.length,
+      },
+      { headers: corsHeaders }
+    );
   } catch (error: any) {
     console.error('\n========================================');
     console.error('❌ GET BOOKINGS ERROR');
@@ -173,7 +189,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: 'Failed to fetch bookings',
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -429,8 +445,68 @@ export async function POST(request: NextRequest) {
           error:
             'You cannot book a date in the past.',
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
+    }
+
+    // --------------------------------------------------------
+    // 9b. CHECK IF BOOKINGS ARE DISABLED OR DATE IS BLOCKED
+    // --------------------------------------------------------
+
+    const settingsDb = await getDatabase();
+    const settingsCollection = settingsDb.collection<any>('settings');
+    const bookingSettings = await settingsCollection.findOne({ _id: 'booking_settings' });
+
+    if (bookingSettings) {
+      if (bookingSettings.isBookingEnabled === false) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              bookingSettings.reason ||
+              'Online reservations are temporarily closed by management. Please contact us directly.',
+          },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+
+      // Check per-section toggle
+      const requestedSection = section === 'garden' ? 'garden' : 'restaurant';
+      if (requestedSection === 'restaurant' && bookingSettings.isRestaurantEnabled === false) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              bookingSettings.restaurantMessage ||
+              'Restaurant dine-in bookings are currently closed by management.',
+          },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+      if (requestedSection === 'garden' && bookingSettings.isGardenEnabled === false) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              bookingSettings.gardenMessage ||
+              'Garden dine-in bookings are currently closed by management.',
+          },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+
+      if (
+        Array.isArray(bookingSettings.blockedDates) &&
+        bookingSettings.blockedDates.includes(cleanDate)
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Reservations are closed for ${cleanDate}. Please choose another date.`,
+          },
+          { status: 403, headers: corsHeaders }
+        );
+      }
     }
 
     // --------------------------------------------------------
@@ -865,24 +941,27 @@ export async function POST(request: NextRequest) {
         booking.expiresAt.toISOString(),
     });
 
-    return NextResponse.json({
-      success: true,
+    return NextResponse.json(
+      {
+        success: true,
 
-      booking: {
-        ...booking,
+        booking: {
+          ...booking,
 
-        createdAt:
-          booking.createdAt.toISOString(),
+          createdAt:
+            booking.createdAt.toISOString(),
 
-        expiresAt:
-          booking.expiresAt.toISOString(),
+          expiresAt:
+            booking.expiresAt.toISOString(),
+        },
+
+        notificationStatus,
+
+        message:
+          `Table ${tableId} reserved for ${cleanName} on ${cleanDate} at ${cleanTimeSlot}.`,
       },
-
-      notificationStatus,
-
-      message:
-        `Table ${tableId} reserved for ${cleanName} on ${cleanDate} at ${cleanTimeSlot}.`,
-    });
+      { headers: corsHeaders }
+    );
   } catch (error: any) {
     console.error(
       '\n========================================'

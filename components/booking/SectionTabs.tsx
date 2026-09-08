@@ -1,4 +1,3 @@
-
 import { SECTION_LABEL, type Section } from '@/lib/tables';
 
 export function SectionTabs({
@@ -14,10 +13,12 @@ export function SectionTabs({
     section === 'restaurant'
       ? 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697767/restaurant_yvohsy.jpg'
       : 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697752/garden_qe3zkg.jpg';
-  
+
+  const displayLabel = (s: Section) =>
+    s === 'restaurant' ? 'Fine Dine' : SECTION_LABEL[s];
+
   return (
     <div className="mb-4 w-full">
-      {/* SECTION BUTTONS */}
       <div className="flex flex-wrap justify-center gap-2">
         {(['restaurant', 'garden'] as Section[]).map((s) => (
           <button
@@ -30,17 +31,16 @@ export function SectionTabs({
                 : 'bg-[#ece8df] text-[#665f53]'
             }`}
           >
-            {SECTION_LABEL[s]}
+            {displayLabel(s)}
           </button>
         ))}
       </div>
 
-      {/* SECTION IMAGE */}
-      <div className="mt-4 flex w-full  justify-center">
+      <div className="mt-4 flex w-full justify-center">
         <img
           src={sectionImage}
-          alt={`${SECTION_LABEL[section]} preview`}
-          className="block h-auto max-w-full md:max-w-[50%] rounded-xl object-contain"
+          alt={`${displayLabel(section)} preview`}
+          className="block h-auto max-w-full rounded-xl object-contain md:max-w-[50%]"
         />
       </div>
     </div>

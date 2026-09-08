@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { SECTION_TIME_SLOTS } from '@/lib/tables';
 
 const input =
@@ -89,6 +89,10 @@ export function BookingForm({
   timeSlot,
   selectedTable,
   loading,
+  isBookingEnabled = true,
+  blockedDates = [],
+  bookingPauseReason = '',
+  seatLayoutSlot,
   onGuestNameChange,
   onPhoneChange,
   onAdultsChange,
@@ -105,6 +109,11 @@ export function BookingForm({
   timeSlot: string;
   selectedTable: string;
   loading: boolean;
+  isBookingEnabled?: boolean;
+  blockedDates?: string[];
+  bookingPauseReason?: string;
+  /** Mobile only: seat layout injected between fields and submit button */
+  seatLayoutSlot?: ReactNode;
   onGuestNameChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
   onAdultsChange: (value: number) => void;
@@ -114,6 +123,9 @@ export function BookingForm({
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }) {
   const [now, setNow] = useState(() => Date.now());
+
+  const isDateBlocked = !!date && Array.isArray(blockedDates) && blockedDates.includes(date);
+  const isBookingClosed = isBookingEnabled === false || isDateBlocked;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -281,6 +293,16 @@ export function BookingForm({
     e: FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
+
+    if (isBookingEnabled === false) {
+      alert(bookingPauseReason || 'Online reservations are currently paused by management. Please contact us directly.');
+      return;
+    }
+
+    if (isDateBlocked) {
+      alert(`Reservations are closed for ${date}. Please select another date.`);
+      return;
+    }
 
     const cleanName =
       guestName.trim();
@@ -602,6 +624,13 @@ export function BookingForm({
           </p>
         )}
 
+        {/* ── Mobile-only seat layout slot ── */}
+        {seatLayoutSlot && (
+          <div className="lg:hidden">
+            {seatLayoutSlot}
+          </div>
+        )}
+
         <div className="rounded-xl border border-[#d9d2c5] bg-[#f8f5ee] px-4 py-3 text-center text-sm font-semibold">
           {selectedTable ? (
             <>
@@ -637,19 +666,47 @@ export function BookingForm({
           </div>
         </div>
 
+        {/* Status Alerts for Closed/Paused Bookings */}
+        {isBookingEnabled === false && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+            <div className="flex items-center gap-2 font-semibold">
+              <span>⏸️</span> Online Bookings Paused
+            </div>
+            <p className="mt-1 leading-normal text-amber-800">
+              {bookingPauseReason || 'Online reservations are temporarily paused by management. Please call us directly.'}
+            </p>
+          </div>
+        )}
+
+        {isBookingEnabled !== false && isDateBlocked && (
+          <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-900">
+            <div className="flex items-center gap-2 font-semibold">
+              <span>📅</span> Date Closed for Reservations
+            </div>
+            <p className="mt-1 leading-normal text-rose-800">
+              Reservations are not being accepted for {date}. Please choose another date.
+            </p>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={
             loading ||
             !date ||
             !timeSlot ||
-            selectedSlotIsInvalid
+            selectedSlotIsInvalid ||
+            isBookingClosed
           }
           className="w-full rounded-xl bg-[#263126] px-4 py-3 font-semibold text-white transition hover:bg-[#2e7d4f] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading
             ? 'Booking…'
-            : 'Confirm Reservation'}
+            : isBookingEnabled === false
+              ? 'Reservations Paused'
+              : isDateBlocked
+                ? 'Date Closed'
+                : 'Confirm Reservation'}
         </button>
       </form>
     </section>
