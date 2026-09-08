@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -9,7 +8,7 @@ function Footer() {
       {/* =========================
           SUB FOOTER
       ========================== */}
-      <section className=" border-t border-[#e8e1d4] my-34">
+      <section className="border-t border-[#e8e1d4] my-34">
         <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-18 lg:px-10 lg:py-20">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
 
@@ -96,33 +95,65 @@ function Footer() {
               </p>
             </div>
 
-            {/* Explore */}
+            {/* Social */}
             <div>
               <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.25em] text-[#c39a4a]">
-                Explore
+                Connect
               </p>
 
-              <nav className="flex flex-col gap-3">
-                <Link
-                  href="/"
-                  className="w-fit text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
-                >
-                  Home
-                </Link>
+              <div className="flex flex-col gap-4">
 
-                <Link
-                className="w-fit text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
-                 href={"#booking"}>
-                  Reserve a Table
-                </Link>
-
-                <Link
-                  href="/menu"
-                  className="w-fit text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
+                {/* Instagram */}
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="group flex w-fit items-center gap-3 text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
                 >
-                  Menu
-                </Link>
-              </nav>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    className="h-5 w-5"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle
+                      cx="17.5"
+                      cy="6.5"
+                      r="1"
+                      fill="currentColor"
+                      stroke="none"
+                    />
+                  </svg>
+
+                  Instagram
+                </a>
+
+                {/* Facebook */}
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="group flex w-fit items-center gap-3 text-sm font-light text-[#d0ccc3] transition-colors hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-5 w-5"
+                  >
+                    <path d="M14 8h3V4h-3c-3.31 0-5 1.69-5 5v3H6v4h3v8h4v-8h3l1-4h-4V9c0-.66.34-1 1-1Z" />
+                  </svg>
+
+                  Facebook
+                </a>
+
+              </div>
             </div>
 
             {/* Visit */}
@@ -141,14 +172,29 @@ function Footer() {
                 Satara, Maharashtra 415001
               </address>
 
+              {/* Get Directions */}
               <a
                 href="https://maps.app.goo.gl/2TXJuFwcEvX7KxRw9"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[#c39a4a] transition-colors hover:text-white"
+                className="mt-4 inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-blue-500 transition-colors hover:text-blue-400"
               >
+                {/* Map Pin Icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-4 w-4"
+                >
+                  <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg>
+
                 Get Directions
-                <span>↗</span>
+
+                <span className="text-sm">↗</span>
               </a>
             </div>
 
@@ -196,8 +242,10 @@ function Footer() {
             </p>
 
             <div className="flex items-center gap-6">
+
+              {/* Instagram */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/saffronsky_satara/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -206,15 +254,17 @@ function Footer() {
                 Instagram
               </a>
 
+              {/* Facebook */}
               <a
-                href="https://maps.app.goo.gl/2TXJuFwcEvX7KxRw9"
+                href="https://www.facebook.com/people/Saffron-Sky/61585917376631/#"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Google Maps"
+                aria-label="Facebook"
                 className="text-[11px] uppercase tracking-[0.16em] text-[#aaa69d] transition-colors hover:text-[#c39a4a]"
               >
-                Google Maps
+                Facebook
               </a>
+
             </div>
 
             <p className="text-[10px] uppercase tracking-[0.16em] text-[#55524c]">
@@ -228,4 +278,3 @@ function Footer() {
 }
 
 export default Footer;
-
