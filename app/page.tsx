@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { BookingForm } from '@/components/booking/BookingForm';
+import { useState, useEffect, useCallback, useRef, type FormEvent } from 'react';
+import { BookingForm, type BookingFormHandle } from '@/components/booking/BookingForm';
 import { BookingHeader } from '@/components/booking/BookingHeader';
 import { FloorPlanLegend } from '@/components/booking/FloorPlanLegend';
 import { SectionTabs } from '@/components/booking/SectionTabs';
@@ -36,10 +36,14 @@ export default function BookingPage() {
   const [bookedTableIds, setBookedTableIds] = useState<string[]>([]);
 
   const [isBookingEnabled, setIsBookingEnabled] = useState(true);
+  const [isRestaurantEnabled, setIsRestaurantEnabled] = useState(true);
+  const [isGardenEnabled, setIsGardenEnabled] = useState(true);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [bookingPauseReason, setBookingPauseReason] = useState('');
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const bookingFormRef = useRef<BookingFormHandle>(null);
 
   const guestCount = adults + children;
 
@@ -119,11 +123,11 @@ export default function BookingPage() {
 
       const bookedIds = Array.isArray(data.tables)
         ? data.tables
-            .filter(
-              (table: any) =>
-                table.isAvailable === false
-            )
-            .map((table: any) => table.id)
+          .filter(
+            (table: any) =>
+              table.isAvailable === false
+          )
+          .map((table: any) => table.id)
         : [];
 
       setBookedTableIds(bookedIds);
@@ -165,13 +169,26 @@ export default function BookingPage() {
       });
       const data = await response.json();
       if (data.success && data.settings) {
-        setIsBookingEnabled(data.settings.isBookingEnabled ?? true);
+        const newIsBookingEnabled = data.settings.isBookingEnabled ?? true;
+        const newIsRestaurantEnabled = data.settings.isRestaurantEnabled ?? true;
+        const newIsGardenEnabled = data.settings.isGardenEnabled ?? true;
+
+        setIsBookingEnabled(newIsBookingEnabled);
+        setIsRestaurantEnabled(newIsRestaurantEnabled);
+        setIsGardenEnabled(newIsGardenEnabled);
         setBlockedDates(
           Array.isArray(data.settings.blockedDates)
             ? data.settings.blockedDates
             : []
         );
         setBookingPauseReason(data.settings.reason || '');
+
+        // Auto-switch section if the current one becomes disabled
+        setSection((prev) => {
+          if (prev === 'restaurant' && !newIsRestaurantEnabled && newIsGardenEnabled) return 'garden';
+          if (prev === 'garden' && !newIsGardenEnabled && newIsRestaurantEnabled) return 'restaurant';
+          return prev;
+        });
       }
     } catch (error) {
       console.warn('Could not load booking settings:', error);
@@ -180,13 +197,20 @@ export default function BookingPage() {
 
 
   // =========================================================
-  // AUTO FETCH AVAILABILITY & SETTINGS
+  // FETCH SETTINGS (ONCE ON WEBSITE LOAD)
+  // =========================================================
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  // =========================================================
+  // AUTO FETCH AVAILABILITY
   // =========================================================
 
   useEffect(() => {
     fetchBookedTables();
-    fetchSettings();
-  }, [fetchBookedTables, fetchSettings]);
+  }, [fetchBookedTables]);
 
 
 
@@ -271,7 +295,7 @@ export default function BookingPage() {
         'info',
         'Reservations Paused',
         bookingPauseReason ||
-          'Online reservations are temporarily paused by management.'
+        'Online reservations are temporarily paused by management.'
       );
       return;
     }
@@ -290,8 +314,7 @@ export default function BookingPage() {
       addToast(
         'error',
         'Table Unavailable',
-        `Table ${id} is already booked for ${timeSlot} on ${
-          date || 'the selected date'
+        `Table ${id} is already booked for ${timeSlot} on ${date || 'the selected date'
         }. Pick another table or time slot.`
       );
 
@@ -362,7 +385,7 @@ export default function BookingPage() {
         'error',
         'Reservations Paused',
         bookingPauseReason ||
-          'Online reservations are currently paused by management. Please call us directly.'
+        'Online reservations are currently paused by management. Please call us directly.'
       );
       return;
     }
@@ -460,7 +483,7 @@ export default function BookingPage() {
           'error',
           'Booking Failed',
           data.error ||
-            'Could not complete reservation.'
+          'Could not complete reservation.'
         );
 
         fetchBookedTables();
@@ -474,7 +497,7 @@ export default function BookingPage() {
         'success',
         'Reservation Confirmed! 🎉',
         data.booking?.message ||
-          `Table ${selectedTable} has been reserved successfully.`
+        `Table ${selectedTable} has been reserved successfully.`
       );
 
 
@@ -498,9 +521,8 @@ export default function BookingPage() {
       addToast(
         'error',
         'Connection Error',
-        `Could not reach the server: ${
-          error?.message ||
-          'Unknown error'
+        `Could not reach the server: ${error?.message ||
+        'Unknown error'
         }`
       );
 
@@ -525,36 +547,56 @@ export default function BookingPage() {
         <BookingHeader />
 
         {/* =================================================
-            BOOKING STATUS NOTICES (PAUSED OR BLOCKED DATE)
+            BOOKING STATUS NOTICES
         ================================================= */}
+
+        {/* Master pause */}
         {!isBookingEnabled && (
           <div className="mt-5 flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50/95 p-4 shadow-sm sm:p-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200/70 text-xl font-bold">
-              ⏸️
-            </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200/70 text-xl font-bold">⏸️</div>
             <div>
-              <h3 className="text-base font-semibold text-amber-950 sm:text-lg">
-                Online Reservations Temporarily Paused
-              </h3>
+              <h3 className="text-base font-semibold text-amber-950 sm:text-lg">Online Reservations Temporarily Paused</h3>
               <p className="mt-0.5 text-xs text-amber-800 sm:text-sm">
-                {bookingPauseReason ||
-                  'Management has temporarily paused online reservations. Please call us directly for table inquiries.'}
+                {bookingPauseReason || 'Management has temporarily paused online reservations. Please call us directly.'}
               </p>
             </div>
           </div>
         )}
 
+        {/* Fine Dine closed notice */}
+        {isBookingEnabled && !isRestaurantEnabled && (
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-orange-200 bg-orange-50/95 p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-200/70 text-xl">🍽️</div>
+            <div>
+              <h3 className="text-base font-semibold text-orange-950 sm:text-lg">Fine Dine Temporarily Unavailable</h3>
+              <p className="mt-0.5 text-xs text-orange-800 sm:text-sm">
+                The Fine Dine section is currently closed.{isGardenEnabled ? ' Garden Dine is still open for reservations.' : ''}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Garden Dine closed notice */}
+        {isBookingEnabled && !isGardenEnabled && (
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/95 p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-200/70 text-xl">🌿</div>
+            <div>
+              <h3 className="text-base font-semibold text-emerald-950 sm:text-lg">Garden Dine Temporarily Unavailable</h3>
+              <p className="mt-0.5 text-xs text-emerald-800 sm:text-sm">
+                The Garden Dine section is currently closed.{isRestaurantEnabled ? ' Fine Dine is still open for reservations.' : ''}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Blocked date notice */}
         {isBookingEnabled && date && blockedDates.includes(date) && (
           <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rose-300 bg-rose-50/95 p-4 shadow-sm sm:p-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-200/70 text-xl font-bold">
-              📅
-            </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-200/70 text-xl">📅</div>
             <div>
-              <h3 className="text-base font-semibold text-rose-950 sm:text-lg">
-                Reservations Closed for {date}
-              </h3>
+              <h3 className="text-base font-semibold text-rose-950 sm:text-lg">Reservations Closed for {date}</h3>
               <p className="mt-0.5 text-xs text-rose-800 sm:text-sm">
-                Online reservations are closed for the selected day. Please select a different date to book.
+                Online reservations are closed for the selected day. Please select a different date.
               </p>
             </div>
           </div>
@@ -562,23 +604,105 @@ export default function BookingPage() {
 
         {/* =================================================
             RESPONSIVE BOOKING AREA
-            MOBILE/TABLET = STACKED
-            LAPTOP/DESKTOP = SIDE BY SIDE
+            MOBILE: Form → Section + Floor Plan → Submit button
+            DESKTOP (md+): Side-by-side layout unchanged
         ================================================= */}
 
-        <div className="mt-5 flex w-full flex-col gap-4 sm:gap-5 lg:mt-6 lg:flex-row lg:items-start lg:gap-6">
+        {/* ── MOBILE LAYOUT (hidden on md+) ── */}
+        <div className="mt-5 flex flex-col gap-4 md:hidden">
 
+          {/* 1. Booking Form (no submit button) */}
+          <BookingForm
+            ref={bookingFormRef}
+            guestName={guestName}
+            phone={phone}
+            adults={adults}
+            children={children}
+            date={date}
+            timeSlot={timeSlot}
+            selectedTable={selectedTable}
+            loading={loading}
+            isBookingEnabled={isBookingEnabled}
+            blockedDates={blockedDates}
+            bookingPauseReason={bookingPauseReason}
+            hideSubmitButton={true}
+            onGuestNameChange={setGuestName}
+            onPhoneChange={setPhone}
+            onAdultsChange={handleAdultsChange}
+            onChildrenChange={handleChildrenChange}
+            onDateChange={handleDateChange}
+            onTimeSlotChange={handleTimeSlotChange}
+            onSubmit={handleSubmit}
+          />
 
-          {/* =================================================
-              FLOOR PLAN (desktop right panel – hidden on mobile)
-          ================================================= */}
-
-          <section id='booking' className="hidden min-w-0 w-full overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4 lg:flex lg:flex-col lg:flex-1">
+          {/* 2. Section Tabs + Floor Plan */}
+          <section className="flex min-w-0 w-full flex-col overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)]">
 
             <SectionTabs
               section={section}
               selectedTable={selectedTable}
               onSectionChange={handleSection}
+              isRestaurantEnabled={isRestaurantEnabled}
+              isGardenEnabled={isGardenEnabled}
+            />
+
+            <div className="my-4 w-full min-w-0 overflow-hidden">
+              <FloorPlanSVG
+                section={section}
+                tables={activeTables}
+                selectedTable={selectedTable}
+                guestCount={guestCount}
+                bookedTableIds={bookedTableIds}
+                onSelect={handleSelectTable}
+              />
+            </div>
+
+            <FloorPlanLegend />
+
+          </section>
+
+          {/* 3. Submit / Book Button */}
+          <button
+            type="button"
+            disabled={
+              loading ||
+              !isBookingEnabled ||
+              (section === 'restaurant' && !isRestaurantEnabled) ||
+              (section === 'garden' && !isGardenEnabled)
+            }
+            onClick={() => bookingFormRef.current?.submitForm()}
+            className="w-full rounded-xl bg-gradient-to-r from-[#263126] to-[#2e7d4f] px-4 py-4 font-semibold text-white transition-all hover:from-[#1e271e] hover:to-[#256843] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 text-[15px] tracking-wide shadow-[0_4px_20px_rgba(46,125,79,0.35)]"
+          >
+            {loading
+              ? '⏳ Booking…'
+              : !isBookingEnabled
+                ? 'Reservations Paused'
+                : (section === 'restaurant' && !isRestaurantEnabled)
+                  ? 'Fine Dine Closed'
+                  : (section === 'garden' && !isGardenEnabled)
+                    ? 'Garden Dine Closed'
+                    : '🍽️ Confirm Reservation'}
+          </button>
+
+        </div>
+
+
+        {/* ── DESKTOP LAYOUT (hidden on mobile, visible md+) ── */}
+        <div className="mt-5 hidden w-full flex-col gap-4 sm:gap-5 md:flex md:flex-row md:items-start md:gap-6 lg:mt-6">
+
+
+          {/* =================================================
+              FLOOR PLAN — visible on desktop
+          ================================================= */}
+
+          <section id='booking' className="flex min-w-0 w-full flex-col overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.07)] sm:p-4 md:flex-1">
+
+            <SectionTabs
+              section={section}
+              selectedTable={selectedTable}
+              onSectionChange={handleSection}
+              isRestaurantEnabled={isRestaurantEnabled}
+              isGardenEnabled={isGardenEnabled}
             />
 
 
@@ -602,10 +726,10 @@ export default function BookingPage() {
 
 
           {/* =================================================
-              BOOKING FORM
+              BOOKING FORM (desktop — with submit button)
           ================================================= */}
 
-          <div className="w-full min-w-0 lg:w-[420px] lg:flex-shrink-0">
+          <div className="w-full min-w-0 md:w-[400px] md:flex-shrink-0 lg:w-[430px]">
 
             <BookingForm
               guestName={guestName}
@@ -626,26 +750,6 @@ export default function BookingPage() {
               onDateChange={handleDateChange}
               onTimeSlotChange={handleTimeSlotChange}
               onSubmit={handleSubmit}
-              seatLayoutSlot={
-                <section className="overflow-hidden rounded-2xl border border-[#d8d0c2] bg-[#fbfaf7] p-3 shadow-[0_8px_24px_rgba(0,0,0,0.06)] sm:p-4">
-                  <SectionTabs
-                    section={section}
-                    selectedTable={selectedTable}
-                    onSectionChange={handleSection}
-                  />
-                  <div className="my-4 w-full min-w-0 overflow-hidden sm:my-5">
-                    <FloorPlanSVG
-                      section={section}
-                      tables={activeTables}
-                      selectedTable={selectedTable}
-                      guestCount={guestCount}
-                      bookedTableIds={bookedTableIds}
-                      onSelect={handleSelectTable}
-                    />
-                  </div>
-                  <FloorPlanLegend />
-                </section>
-              }
             />
 
           </div>

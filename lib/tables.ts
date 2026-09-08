@@ -582,7 +582,7 @@ export const ALL_TABLES = [
 ========================================================= */
 
 export const SECTION_LABEL: Record<Section, string> = {
-  restaurant: 'Restaurant Dine',
+  restaurant: 'Fine Dine',
   garden: 'Garden Dine',
 };
 
@@ -634,13 +634,11 @@ export interface Booking {
 export function getRequiredTableCapacity(
   guestCount: number
 ): number {
-  if (guestCount <= 2) return 2;
-
   if (guestCount <= 4) return 4;
 
   if (guestCount <= 6) return 6;
 
-  return 8;
+  return Infinity;
 }
 
 
@@ -652,10 +650,18 @@ export function isTableAllowedForParty(
   tableCapacity: number,
   guestCount: number
 ): boolean {
-  const maxCapacity =
-    getRequiredTableCapacity(guestCount);
+  // 1-4 guests → show table with capacity 4
+  if (guestCount <= 4) {
+    return tableCapacity === 4;
+  }
 
-  return tableCapacity <= maxCapacity;
+  // 5-6 guests → show table of capacity 4 and 6
+  if (guestCount <= 6) {
+    return tableCapacity === 4 || tableCapacity === 6;
+  }
+
+  // 7+ guests → show all tables
+  return true;
 }
 
 

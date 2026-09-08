@@ -1,5 +1,31 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, useRef, forwardRef, useImperativeHandle, type FormEvent } from 'react';
 import { SECTION_TIME_SLOTS } from '@/lib/tables';
+
+export interface BookingFormHandle {
+  submitForm: () => void;
+}
+
+export interface BookingFormProps {
+  guestName: string;
+  phone: string;
+  adults: number;
+  children: number;
+  date: string;
+  timeSlot: string;
+  selectedTable: string;
+  loading: boolean;
+  isBookingEnabled?: boolean;
+  blockedDates?: string[];
+  bookingPauseReason?: string;
+  hideSubmitButton?: boolean;
+  onGuestNameChange: (value: string) => void;
+  onPhoneChange: (value: string) => void;
+  onAdultsChange: (value: number) => void;
+  onChildrenChange: (value: number) => void;
+  onDateChange: (value: string) => void;
+  onTimeSlotChange: (value: string) => void;
+  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+}
 
 const input =
   'w-full rounded-lg border border-[#d8cfbf] bg-white px-3 py-3 text-[15px] text-[#302e2a] outline-none focus:border-[#3e6b4f]';
@@ -80,48 +106,38 @@ function isSlotPast(
   return slotStart <= now;
 }
 
-export function BookingForm({
-  guestName,
-  phone,
-  adults,
-  children,
-  date,
-  timeSlot,
-  selectedTable,
-  loading,
-  isBookingEnabled = true,
-  blockedDates = [],
-  bookingPauseReason = '',
-  seatLayoutSlot,
-  onGuestNameChange,
-  onPhoneChange,
-  onAdultsChange,
-  onChildrenChange,
-  onDateChange,
-  onTimeSlotChange,
-  onSubmit,
-}: {
-  guestName: string;
-  phone: string;
-  adults: number;
-  children: number;
-  date: string;
-  timeSlot: string;
-  selectedTable: string;
-  loading: boolean;
-  isBookingEnabled?: boolean;
-  blockedDates?: string[];
-  bookingPauseReason?: string;
-  /** Mobile only: seat layout injected between fields and submit button */
-  seatLayoutSlot?: ReactNode;
-  onGuestNameChange: (value: string) => void;
-  onPhoneChange: (value: string) => void;
-  onAdultsChange: (value: number) => void;
-  onChildrenChange: (value: number) => void;
-  onDateChange: (value: string) => void;
-  onTimeSlotChange: (value: string) => void;
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-}) {
+export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(function BookingForm(
+  {
+    guestName,
+    phone,
+    adults,
+    children,
+    date,
+    timeSlot,
+    selectedTable,
+    loading,
+    isBookingEnabled = true,
+    blockedDates = [],
+    bookingPauseReason = '',
+    hideSubmitButton = false,
+    onGuestNameChange,
+    onPhoneChange,
+    onAdultsChange,
+    onChildrenChange,
+    onDateChange,
+    onTimeSlotChange,
+    onSubmit,
+  },
+  ref
+) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      formRef.current?.requestSubmit();
+    },
+  }));
+
   const [now, setNow] = useState(() => Date.now());
 
   const isDateBlocked = !!date && Array.isArray(blockedDates) && blockedDates.includes(date);
@@ -481,6 +497,7 @@ export function BookingForm({
       </p>
 
       <form
+        ref={formRef}
         onSubmit={validateForm}
         className="mt-5 space-y-4"
       >
@@ -624,13 +641,6 @@ export function BookingForm({
           </p>
         )}
 
-        {/* ── Mobile-only seat layout slot ── */}
-        {seatLayoutSlot && (
-          <div className="lg:hidden">
-            {seatLayoutSlot}
-          </div>
-        )}
-
         <div className="rounded-xl border border-[#d9d2c5] bg-[#f8f5ee] px-4 py-3 text-center text-sm font-semibold">
           {selectedTable ? (
             <>
@@ -689,26 +699,31 @@ export function BookingForm({
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={
-            loading ||
-            !date ||
-            !timeSlot ||
-            selectedSlotIsInvalid ||
-            isBookingClosed
-          }
-          className="w-full rounded-xl bg-[#263126] px-4 py-3 font-semibold text-white transition hover:bg-[#2e7d4f] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading
-            ? 'Booking…'
-            : isBookingEnabled === false
+
+        
+
+        {!hideSubmitButton && (
+          <button
+            type="submit"
+            disabled={
+              loading ||
+              !date ||
+              !timeSlot ||
+              selectedSlotIsInvalid ||
+              isBookingClosed
+            }
+            className="w-full rounded-xl bg-[#263126] px-4 py-3 font-semibold text-white transition hover:bg-[#2e7d4f] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading
+              ? 'Booking…'
+              : isBookingEnabled === false
               ? 'Reservations Paused'
               : isDateBlocked
-                ? 'Date Closed'
-                : 'Confirm Reservation'}
-        </button>
+              ? 'Date Closed'
+              : 'Confirm Reservation'}
+          </button>
+        )}
       </form>
     </section>
   );
-}
+});

@@ -106,6 +106,10 @@ export function RenderTable({
     opacity: isBooked ? 0.35 : allowed || selected ? 1 : 0.32,
     style: { cursor: allowed ? 'pointer' : 'not-allowed' as const },
     onClick: click,
+    onTouchEnd: (e: React.TouchEvent) => {
+      e.preventDefault();
+      click();
+    },
     onMouseEnter: () => onHover(t),
     onMouseLeave: () => onHover(null),
     role: 'button' as const,

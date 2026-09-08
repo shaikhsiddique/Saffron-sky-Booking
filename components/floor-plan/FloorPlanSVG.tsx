@@ -145,9 +145,11 @@ export function FloorPlanSVG({
    *
    * This is the ONLY normal way the mobile panel closes.
    */
-  const handleClosePanel = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleClosePanel = (e?: { preventDefault: () => void; stopPropagation: () => void }) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     const panel = mobilePanelRef.current;
 
@@ -157,19 +159,10 @@ export function FloorPlanSVG({
       return;
     }
 
-    /*
-     * Prevent multiple close animations.
-     */
     gsap.killTweensOf(panel);
 
-    /*
-     * Tell React it is closing.
-     */
     setMobilePanelOpen(false);
 
-    /*
-     * Animate out.
-     */
     gsap.to(panel, {
       autoAlpha: 0,
       y: 40,
@@ -177,10 +170,6 @@ export function FloorPlanSVG({
       ease: "expo.in",
       pointerEvents: "none",
       onComplete: () => {
-        /*
-         * Only clear the stored table AFTER
-         * the animation has finished.
-         */
         setMobileTable(null);
       },
     });
@@ -330,15 +319,14 @@ export function FloorPlanSVG({
           left-1/2
           z-50
           w-[calc(100%-24px)]
-          max-w-[360px]
+          max-w-[380px]
           -translate-x-1/2
           overflow-hidden
           rounded-2xl
           border
           border-[#d8d0c2]
           bg-white
-          shadow-[0_16px_45px_rgba(0,0,0,0.25)]
-          md:hidden
+          shadow-[0_16px_45px_rgba(0,0,0,0.28)]
         "
         style={{
           opacity: 0,
@@ -349,90 +337,62 @@ export function FloorPlanSVG({
         {mobileTable && (
           <>
             {/* =================================================
-                IMAGE
+                IMAGE WITH OVERLAY
             ================================================= */}
+            <div className="relative h-[150px] w-full overflow-hidden">
+              <img
+                src={mobileTable.image}
+                alt={`Table ${mobileTable.number}`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/tables/dummy.jpg";
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-           
-<div className="relative flex h-[160px] w-full items-center justify-center overflow-hidden">
-  <img
-    src={mobileTable.image}
-    alt={`Table ${mobileTable.number}`}
-    className="block h-[160px] w-auto max-w-full object-contain"
-    onError={(e) => {
-      e.currentTarget.src = "/tables/dummy.jpg";
-    }}
-  />
+              {/* Close button */}
+              <button
+                type="button"
+                aria-label="Close table information"
+                onClick={handleClosePanel}
+                className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-xl font-normal leading-none text-white shadow-lg backdrop-blur-sm transition-all hover:bg-black/80 active:scale-90"
+              >
+                ×
+              </button>
 
-  {/* =================================================
-      CLOSE BUTTON
-  ================================================= */}
+              {/* Table label overlay */}
+              <div className="absolute bottom-3 left-3">
+                <p className="text-base font-bold text-white drop-shadow">Table {mobileTable.number}</p>
+                <p className="text-xs text-white/80">{mobileTable.capacity} seats</p>
+              </div>
 
-  <button
-    type="button"
-    aria-label="Close table information"
-    onClick={handleClosePanel}
-    className="
-      absolute
-      right-2
-      top-2
-      z-20
-      flex
-      h-10
-      w-10
-      items-center
-      justify-center
-      rounded-full
-      bg-black/70
-      text-2xl
-      font-normal
-      leading-none
-      text-white
-      shadow-lg
-      backdrop-blur-sm
-      transition-all
-      hover:bg-black/85
-      active:scale-90
-    "
-  >
-    ×
-  </button>
-</div>
-
-
+              {bookedTableIds.includes(mobileTable.id) && (
+                <span className="absolute top-2 left-2 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-bold text-white shadow">
+                  BOOKED
+                </span>
+              )}
+            </div>
 
             {/* =================================================
-                TABLE INFORMATION
+                ACTION AREA
             ================================================= */}
-
             <div className="px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-[#302e2a]">
-                    Table {mobileTable.number}
-                  </p>
-
-                  <p className="mt-0.5 text-xs text-[#746f65]">
-                    {mobileTable.capacity} seats
-                  </p>
-                </div>
-
-                {bookedTableIds.includes(mobileTable.id) && (
-                  <span
-                    className="
-                      shrink-0
-                      rounded-full
-                      bg-[#fbe9e7]
-                      px-2.5
-                      py-1
-                      text-[10px]
-                      font-bold
-                      text-[#c0392b]
-                    "
-                  >
-                    BOOKED
-                  </span>
-                )}
-              </div>
+              {bookedTableIds.includes(mobileTable.id) ? (
+                <p className="text-center text-sm font-medium text-red-600">
+                  This table is already booked for this slot.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(mobileTable.id);
+                    handleClosePanel({ preventDefault: () => {}, stopPropagation: () => {} } as any);
+                  }}
+                  className="w-full rounded-xl bg-gradient-to-r from-[#263126] to-[#2e7d4f] py-3 text-sm font-semibold text-white shadow transition hover:from-[#1e271e] hover:to-[#256843] active:scale-[0.98]"
+                >
+                  ✓ Select Table {mobileTable.number}
+                </button>
+              )}
             </div>
           </>
         )}

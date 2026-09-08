@@ -66,7 +66,7 @@ const SLOT_TIMES: Record<
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
@@ -75,6 +75,104 @@ export async function OPTIONS() {
     status: 204,
     headers: corsHeaders,
   });
+}
+
+// ============================================================
+// DELETE /api/bookings?id=BOOKING_ID
+// ============================================================
+
+export async function DELETE(request: NextRequest) {
+  console.log('\n========================================');
+  console.log('🗑️ DELETE /api/bookings');
+  console.log('========================================');
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const bookingId = searchParams.get('id');
+
+    if (!bookingId || !bookingId.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Missing required query parameter: id',
+        },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    console.log('🔎 Booking ID to delete:', bookingId);
+
+    const db = await getDatabase();
+    const bookingsCollection =
+      db.collection<BookingRecord>('bookings');
+
+    const existing = await bookingsCollection.findOne({
+      id: bookingId.trim(),
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Booking ${bookingId} not found.`,
+        },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    console.log('📋 Found booking:', {
+      id: existing.id,
+      guestName: existing.guestName,
+      tableId: existing.tableId,
+      date: existing.date,
+      timeSlot: existing.timeSlot,
+    });
+
+    const deleteResult = await bookingsCollection.deleteOne({
+      id: bookingId.trim(),
+    });
+
+    console.log('🗑️ Delete result:', {
+      acknowledged: deleteResult.acknowledged,
+      deletedCount: deleteResult.deletedCount,
+    });
+
+    if (!deleteResult.acknowledged || deleteResult.deletedCount === 0) {
+      throw new Error('MongoDB did not acknowledge booking deletion.');
+    }
+
+    console.log('✅ BOOKING DELETED SUCCESSFULLY');
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Booking ${bookingId} for ${existing.guestName} has been deleted.`,
+        deletedBooking: {
+          id: existing.id,
+          guestName: existing.guestName,
+          tableId: existing.tableId,
+          date: existing.date,
+          timeSlot: existing.timeSlot,
+          section: existing.section,
+        },
+      },
+      { headers: corsHeaders }
+    );
+  } catch (error: any) {
+    console.error('\n========================================');
+    console.error('❌ DELETE BOOKING ERROR');
+    console.error('========================================');
+    console.error('Error:', error);
+    console.error('Message:', error?.message);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error?.message || 'Failed to delete booking.',
+      },
+      { status: 500, headers: corsHeaders }
+    );
+  }
 }
 
 // ============================================================
