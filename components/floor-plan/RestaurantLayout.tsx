@@ -343,7 +343,7 @@ export function RestaurantLayout() {
         fill="#7b7b72"
         letterSpacing="2"
       >
-        RESTAURANT DINE
+        FINE DINE IN
       </text>
     </g>
   );

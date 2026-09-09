@@ -129,7 +129,7 @@ export function BarCounter({ x = 188, y = 254 }: { x?: number; y?: number }) {
         letterSpacing="1.2"
         transform={`rotate(90 ${x + 46} ${y + 76})`}
       >
-        COCKTAIL BAR
+        MOCKTIAL BAR
       </text>
     </g>
   );

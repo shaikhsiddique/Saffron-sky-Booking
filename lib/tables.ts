@@ -272,7 +272,7 @@ export const RESTAURANT_TABLES: FloorTable[] = [
     w: 44,
     h: 20,
     isAvailable: true,
-    image:"https://res.cloudinary.com/daai6xwtd/image/upload/v1788697023/r12_qkabmv.jpg",
+    image: "https://res.cloudinary.com/daai6xwtd/image/upload/v1788697023/r12_qkabmv.jpg",
   },
 
   {
@@ -582,8 +582,23 @@ export const ALL_TABLES = [
 ========================================================= */
 
 export const SECTION_LABEL: Record<Section, string> = {
-  restaurant: 'Fine Dine',
+  restaurant: 'Fine Dine In',
   garden: 'Garden Dine',
+};
+
+
+/* =========================================================
+   GARDEN JOIN TABLE PAIRS
+========================================================= */
+
+export const GARDEN_JOIN_PAIRS: Record<string, string[]> = {
+  G1: ['G6'],
+  G2: ['G5'],
+  G3: ['G4'],
+
+  G9: ['G8'],
+  G10: ['G7'],
+  G11: ['G6'],
 };
 
 
@@ -634,9 +649,11 @@ export interface Booking {
 export function getRequiredTableCapacity(
   guestCount: number
 ): number {
-  if (guestCount <= 4) return 4;
+  if (guestCount <= 5) return 4;
 
-  if (guestCount <= 6) return 6;
+  if (guestCount <= 7) return 6;
+
+  if (guestCount === 8) return 8;
 
   return Infinity;
 }
@@ -648,19 +665,27 @@ export function getRequiredTableCapacity(
 
 export function isTableAllowedForParty(
   tableCapacity: number,
-  guestCount: number
+  guestCount: number,
+  section?: Section
 ): boolean {
-  // 1-4 guests → show table with capacity 4
-  if (guestCount <= 4) {
+  // 1-5 guests → show table with capacity 4
+  if (guestCount <= 5) {
     return tableCapacity === 4;
   }
 
-  // 5-6 guests → show table of capacity 4 and 6
-  if (guestCount <= 6) {
-    return tableCapacity === 4 || tableCapacity === 6;
+  // 6-7 guests → show table with capacity 6
+  if (guestCount <= 7) {
+    return tableCapacity === 6;
   }
 
-  // 7+ guests → show all tables
+  // 8 guests → show table with capacity 8 (or capacity 6 in garden if no 8 exists)
+  if (guestCount === 8) {
+    if (tableCapacity === 8) return true;
+    if (section === 'garden' && tableCapacity === 6) return true;
+    return false;
+  }
+
+  // > 8 guests → show all tables (for joining tables or large parties)
   return true;
 }
 

@@ -23,20 +23,44 @@ export async function sendBookingNotification(
   guestName: string,
   tableId: string,
   time: string,
-  guestCount: number
+  guestCount: number,
+  options?: {
+    section?: string;
+    hasExtraChair?: boolean;
+    isJoinedTable?: boolean;
+  }
 ) {
   try {
+    // For restaurant (Fine Dine In) booked seat show FN not R
+    let displayTable = tableId;
+    if (options?.section === 'restaurant' || /^R\d+/i.test(tableId)) {
+      displayTable = tableId.replace(/\bR(\d+)\b/gi, 'FN$1').replace(/^R(\d+)$/i, 'FN$1');
+    }
+
+    let extraDetails = '';
+    if (options?.hasExtraChair) {
+      extraDetails += ' • 🪑 Extra Chair';
+    }
+    if (options?.isJoinedTable) {
+      extraDetails += ' • 🔗 Joined Tables';
+    }
+
+    const bodyText = `${guestName} • ${guestCount} guests • Table ${displayTable} at ${time}${extraDetails}`;
+
     await admin.messaging().send({
       notification: {
         title: '🍽️ New Booking!',
-        body: `${guestName} • ${guestCount} guests • Table ${tableId} at ${time}`,
+        body: bodyText,
       },
       data: {
         type: 'new_booking',
         guestName,
-        tableId,
+        tableId: displayTable,
         time,
         guestCount: guestCount.toString(),
+        section: options?.section || 'restaurant',
+        hasExtraChair: options?.hasExtraChair ? 'true' : 'false',
+        isJoinedTable: options?.isJoinedTable ? 'true' : 'false',
       },
       topic: 'restaurant_bookings',
     });

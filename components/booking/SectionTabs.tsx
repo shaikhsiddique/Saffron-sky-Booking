@@ -18,11 +18,11 @@ export function SectionTabs({
   const SECTIONS = [
     {
       id: 'restaurant' as Section,
-      label: 'Fine Dine',
+      label: 'Fine Dine In',
       emoji: '🍽️',
       enabled: isRestaurantEnabled,
       image: 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697767/restaurant_yvohsy.jpg',
-      closedMsg: 'Fine Dine is temporarily closed',
+      closedMsg: 'Fine Dine In is temporarily closed',
     },
     {
       id: 'garden' as Section,
@@ -108,7 +108,7 @@ export function SectionTabs({
               <img
                 src={activeSectionData.image}
                 alt={`${activeSectionData.label} preview`}
-                className="block h-[130px] w-full object-cover sm:h-[150px] transition-all duration-500"
+                className="block h-auto w-full object-cover  sm:h-[450px] transition-all duration-500"
               />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />

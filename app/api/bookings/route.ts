@@ -18,6 +18,10 @@ interface BookingRecord {
   section: string;
   createdAt: Date;
   expiresAt: Date;
+  hasExtraChair?: boolean;
+  isJoinedTable?: boolean;
+  joinedTableId?: string;
+  tableIds?: string[];
 }
 
 const IST_OFFSET = '+05:30';
@@ -407,12 +411,12 @@ export async function POST(request: NextRequest) {
     if (
       !Number.isInteger(adultsNumber) ||
       adultsNumber < 1 ||
-      adultsNumber > 8
+      adultsNumber > 20
     ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Adults must be between 1 and 8.',
+          error: 'Adults must be between 1 and 20.',
         },
         { status: 400 }
       );
@@ -421,12 +425,12 @@ export async function POST(request: NextRequest) {
     if (
       !Number.isInteger(childrenNumber) ||
       childrenNumber < 0 ||
-      childrenNumber > 3
+      childrenNumber > 6
     ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Children must be between 0 and 3.',
+          error: 'Children must be between 0 and 6.',
         },
         { status: 400 }
       );
@@ -439,7 +443,7 @@ export async function POST(request: NextRequest) {
 
     if (
       guestCount < 1 ||
-      guestCount > 11
+      guestCount > 25
     ) {
       return NextResponse.json(
         {
@@ -576,7 +580,7 @@ export async function POST(request: NextRequest) {
             success: false,
             error:
               bookingSettings.restaurantMessage ||
-              'Restaurant dine-in bookings are currently closed by management.',
+              'Fine Dine In bookings are currently closed by management.',
           },
           { status: 403, headers: corsHeaders }
         );
@@ -605,6 +609,21 @@ export async function POST(request: NextRequest) {
           { status: 403, headers: corsHeaders }
         );
       }
+    }
+
+    // --------------------------------------------------------
+    // 9c. SAME-DAY BOOKING CUTOFF (7:00 PM / 19:00 IST)
+    // --------------------------------------------------------
+    const todayIST = getISTDateString(now);
+    const currentISTHour = getISTHour(now);
+    if (cleanDate === todayIST && currentISTHour >= 19) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Same-day reservations for today close at 7:00 PM. Please select a future date.',
+        },
+        { status: 403, headers: corsHeaders }
+      );
     }
 
     // --------------------------------------------------------
@@ -700,15 +719,17 @@ export async function POST(request: NextRequest) {
     // 13. FIND TABLE
     // --------------------------------------------------------
 
-    const targetTable =
-      tables.find(
-        (table) =>
-          table.id === String(tableId)
-      );
+    const requestedTableIds = Array.isArray(body.tableIds) && body.tableIds.length > 0
+      ? body.tableIds.map(String)
+      : String(tableId).split(/[,+]/).map((s: string) => s.trim()).filter(Boolean);
+
+    const isJoined = Boolean(body.isJoinedTable || requestedTableIds.length > 1);
+    const hasExtraChair = Boolean(body.hasExtraChair || body.extraChair);
 
     console.log(
-      '🪑 Requested table:',
-      tableId
+      '🪑 Requested table(s):',
+      requestedTableIds,
+      { isJoined, hasExtraChair }
     );
 
     console.log(
@@ -716,7 +737,11 @@ export async function POST(request: NextRequest) {
       selectedSection
     );
 
-    if (!targetTable) {
+    const targetTables = tables.filter((table) =>
+      requestedTableIds.includes(table.id)
+    );
+
+    if (targetTables.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -728,38 +753,39 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      '✅ Table found:',
-      {
-        id: targetTable.id,
-        capacity:
-          targetTable.capacity,
-      }
+      '✅ Table(s) found:',
+      targetTables.map((t) => ({ id: t.id, capacity: t.capacity }))
     );
 
     // --------------------------------------------------------
     // 14. TABLE CAPACITY
     // --------------------------------------------------------
 
-    const tableAllowed =
-      isTableAllowedForParty(
-        targetTable.capacity,
-        guestCount
+    if (!isJoined) {
+      const tableAllowed =
+        isTableAllowedForParty(
+          targetTables[0].capacity,
+          guestCount
+        );
+
+      console.log(
+        '🔍 Capacity allowed:',
+        tableAllowed
       );
 
-    console.log(
-      '🔍 Capacity allowed:',
-      tableAllowed
-    );
-
-    if (!tableAllowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            `Table ${tableId} does not match a party of ${guestCount}.`,
-        },
-        { status: 400 }
-      );
+      if (!tableAllowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              `Table ${tableId} does not match a party of ${guestCount}.`,
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      const totalCapacity = targetTables.reduce((sum, t) => sum + t.capacity, 0);
+      console.log('🔗 Combined joined tables capacity:', totalCapacity);
     }
 
     // --------------------------------------------------------
@@ -804,51 +830,29 @@ export async function POST(request: NextRequest) {
       '🔎 Checking exact booking conflict...'
     );
 
+    const conflictQuery: any = {
+      $or: [
+        { tableId: { $in: requestedTableIds } },
+        { tableIds: { $in: requestedTableIds } },
+        ...requestedTableIds.map((tid: string) => ({
+          tableId: { $regex: new RegExp(`\\b${tid}\\b`) },
+        })),
+      ],
+      date: cleanDate,
+      timeSlot: cleanTimeSlot,
+      section: selectedSection,
+      expiresAt: {
+        $gt: now,
+      },
+    };
+
     const existingBooking =
-      await bookingsCollection.findOne(
-        {
-          tableId:
-            String(tableId),
-
-          date:
-            cleanDate,
-
-          timeSlot:
-            cleanTimeSlot,
-
-          section:
-            selectedSection,
-
-          expiresAt: {
-            $gt: now,
-          },
-        }
-      );
+      await bookingsCollection.findOne(conflictQuery);
 
     if (existingBooking) {
       console.error(
         '❌ TABLE ALREADY BOOKED FOR THIS SLOT'
       );
-
-      console.error({
-        tableId:
-          existingBooking.tableId,
-
-        date:
-          existingBooking.date,
-
-        timeSlot:
-          existingBooking.timeSlot,
-
-        section:
-          existingBooking.section,
-
-        bookingId:
-          existingBooking.id,
-
-        expiresAt:
-          existingBooking.expiresAt,
-      });
 
       return NextResponse.json(
         {
@@ -899,6 +903,11 @@ export async function POST(request: NextRequest) {
 
       expiresAt:
         reservationEnd,
+
+      hasExtraChair,
+      isJoinedTable: isJoined,
+      tableIds: requestedTableIds,
+      joinedTableId: isJoined && requestedTableIds.length > 1 ? requestedTableIds[1] : undefined,
     };
 
     console.log(
@@ -983,7 +992,12 @@ export async function POST(request: NextRequest) {
           booking.guestName,
           booking.tableId,
           booking.timeSlot,
-          booking.guestCount
+          booking.guestCount,
+          {
+            section: booking.section,
+            hasExtraChair: booking.hasExtraChair,
+            isJoinedTable: booking.isJoinedTable,
+          }
         );
 
         notificationStatus =
@@ -1187,4 +1201,14 @@ function getISTDateString(
     );
 
   return formatter.format(date);
+}
+
+function getISTHour(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    hour12: false,
+  }).formatToParts(date);
+  const hourPart = parts.find((p) => p.type === 'hour');
+  return hourPart ? parseInt(hourPart.value, 10) : date.getHours();
 }

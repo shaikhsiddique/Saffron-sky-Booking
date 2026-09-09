@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, forwardRef, useImperativeHandle, type FormEvent } from 'react';
-import { SECTION_TIME_SLOTS } from '@/lib/tables';
+import { SECTION_TIME_SLOTS, type Section } from '@/lib/tables';
+import { ExtraChairToggle, JoinTableToggle } from './BookingAddons';
 
 export interface BookingFormHandle {
   submitForm: () => void;
@@ -14,6 +15,9 @@ export interface BookingFormProps {
   timeSlot: string;
   selectedTable: string;
   loading: boolean;
+  section?: Section;
+  hasExtraChair?: boolean;
+  isJoinTableEnabled?: boolean;
   isBookingEnabled?: boolean;
   blockedDates?: string[];
   bookingPauseReason?: string;
@@ -24,6 +28,8 @@ export interface BookingFormProps {
   onChildrenChange: (value: number) => void;
   onDateChange: (value: string) => void;
   onTimeSlotChange: (value: string) => void;
+  onExtraChairChange?: (value: boolean) => void;
+  onJoinTableToggle?: (value: boolean) => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }
 
@@ -116,6 +122,9 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
     timeSlot,
     selectedTable,
     loading,
+    section = 'restaurant',
+    hasExtraChair = false,
+    isJoinTableEnabled = false,
     isBookingEnabled = true,
     blockedDates = [],
     bookingPauseReason = '',
@@ -126,6 +135,8 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
     onChildrenChange,
     onDateChange,
     onTimeSlotChange,
+    onExtraChairChange,
+    onJoinTableToggle,
     onSubmit,
   },
   ref
@@ -155,8 +166,8 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
 
   const today = getIndiaToday();
 
-  const getAvailableSlots = () => {
-    if (!date) {
+  const getAvailableSlots = (): string[] => {
+    if (!date || date < today) {
       return [];
     }
 
@@ -164,13 +175,16 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
       return [...SECTION_TIME_SLOTS];
     }
 
-    if (date < today) {
-      return [];
+    if (date === today) {
+      if (getIndiaNow().hour >= 19) {
+        return [];
+      }
+      return SECTION_TIME_SLOTS.filter(
+        (slot) => !isSlotPast(date, slot, now)
+      );
     }
 
-    return SECTION_TIME_SLOTS.filter(
-      (slot) => !isSlotPast(date, slot, now)
-    );
+    return [];
   };
 
   const availableSlots = getAvailableSlots();
@@ -365,20 +379,20 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
 
     if (
       adults < 1 ||
-      adults > 8
+      adults > 20
     ) {
       alert(
-        'Please select between 1 and 8 adults.'
+        'Please select between 1 and 20 adults.'
       );
       return;
     }
 
     if (
       children < 0 ||
-      children > 3
+      children > 6
     ) {
       alert(
-        'Please select between 0 and 3 children.'
+        'Please select between 0 and 6 children.'
       );
       return;
     }
@@ -388,10 +402,10 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
 
     if (
       totalGuests < 1 ||
-      totalGuests > 11
+      totalGuests > 25
     ) {
       alert(
-        'Total guests must be between 1 and 11.'
+        'Total guests must be between 1 and 25.'
       );
       return;
     }
@@ -410,6 +424,11 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
       alert(
         'You cannot book a date in the past.'
       );
+      return;
+    }
+
+    if (date === currentToday && getIndiaNow().hour >= 19) {
+      alert('Same-day reservations for today close at 7:00 PM. Please select a future date.');
       return;
     }
 
@@ -544,17 +563,31 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
             }
             required
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(
-              (n) => (
-                <option
-                  key={n}
-                  value={n}
-                >
-                  {n} Adult
-                  {n !== 1 ? 's' : ''}
-                </option>
-              )
-            )}
+            <optgroup label="Standard Party (1–8)">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(
+                (n) => (
+                  <option
+                    key={n}
+                    value={n}
+                  >
+                    {n} Adult
+                    {n !== 1 ? 's' : ''}
+                  </option>
+                )
+              )}
+            </optgroup>
+            <optgroup label="Large Party (More than 8)">
+              {[9, 10, 11, 12, 14, 16, 20].map(
+                (n) => (
+                  <option
+                    key={n}
+                    value={n}
+                  >
+                    {n} Adults (More than 8)
+                  </option>
+                )
+              )}
+            </optgroup>
           </select>
 
           <select
@@ -567,7 +600,7 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
             }
             required
           >
-            {[0, 1, 2, 3].map(
+            {[0, 1, 2, 3, 4, 5, 6].map(
               (n) => (
                 <option
                   key={n}
@@ -630,7 +663,9 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
 
           {noSlotsLeft && (
             <option value="">
-              No remaining slots today
+              {date === today && getIndiaNow().hour >= 19
+                ? 'Same-day bookings closed after 7:00 PM'
+                : 'No remaining slots today'}
             </option>
           )}
         </select>
@@ -700,7 +735,22 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
         )}
 
 
-        
+
+
+        {/* Extra Chair Addon (only for guest size 5 or 7) */}
+        <ExtraChairToggle
+          guestCount={adults + children}
+          hasExtraChair={hasExtraChair}
+          onChange={onExtraChairChange ?? (() => { })}
+        />
+
+        {/* Join Table Option (only for Garden Dine & guest size > 8) */}
+        <JoinTableToggle
+          section={section}
+          guestCount={adults + children}
+          isJoinTableEnabled={isJoinTableEnabled}
+          onToggle={onJoinTableToggle ?? (() => { })}
+        />
 
         {!hideSubmitButton && (
           <button
@@ -717,10 +767,10 @@ export const BookingForm = forwardRef<BookingFormHandle, BookingFormProps>(funct
             {loading
               ? 'Booking…'
               : isBookingEnabled === false
-              ? 'Reservations Paused'
-              : isDateBlocked
-              ? 'Date Closed'
-              : 'Confirm Reservation'}
+                ? 'Reservations Paused'
+                : isDateBlocked
+                  ? 'Date Closed'
+                  : 'Confirm Reservation'}
           </button>
         )}
       </form>

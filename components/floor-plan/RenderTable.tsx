@@ -90,8 +90,13 @@ export function RenderTable({
 }) {
   if (!t.isAvailable) return null;
 
-  const allowed = !isBooked && isTableAllowedForParty(t.capacity, guestCount);
-  const selected = selectedTable === t.id;
+  const allowed = !isBooked && isTableAllowedForParty(t.capacity, guestCount, t.section);
+  const selected =
+    selectedTable === t.id ||
+    selectedTable
+      .split(/[,+]/)
+      .map((s) => s.trim())
+      .includes(t.id);
   const fill = isBooked ? '#c0392b' : selected ? '#2e7d4f' : 'url(#stone-top)';
   const stroke = isBooked ? '#922b21' : selected ? '#14542f' : GOLD;
 
@@ -127,15 +132,17 @@ export function RenderTable({
       <g {...common}>
         {selected && (
           <rect
-            x={t.x - 32}
-            y={t.y - 24}
-            width={64}
-            height={48}
-            rx={4}
-            fill="#2e7d4f"
-            opacity="0.16"
-            stroke="#14542f"
-            strokeWidth="1.8"
+            x={t.x - 36}
+            y={t.y - 28}
+            width={72}
+            height={56}
+            rx={8}
+            fill="#22c55e"
+            opacity="0.28"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeDasharray="4 2"
+            pointerEvents="none"
           />
         )}
         <circle cx={t.x} cy={t.y} r={10} fill={fill} stroke={stroke} strokeWidth={common.strokeWidth} />
@@ -149,6 +156,19 @@ export function RenderTable({
     const chairR = r + 8.5;
     return (
       <g {...common}>
+        {selected && (
+          <circle
+            cx={t.x}
+            cy={t.y}
+            r={r + 14}
+            fill="#22c55e"
+            opacity="0.25"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeDasharray="4 2"
+            pointerEvents="none"
+          />
+        )}
         {[...Array(t.capacity)].map((_, i) => {
           const a = (Math.PI * 2 * i) / t.capacity - Math.PI / 2;
           return (
@@ -162,7 +182,6 @@ export function RenderTable({
             />
           );
         })}
-        {selected && <circle cx={t.x} cy={t.y} r={r + 7} fill="#2e7d4f" opacity="0.14" pointerEvents="none" />}
         <circle cx={t.x} cy={t.y} r={r} fill={fill} stroke={stroke} strokeWidth={common.strokeWidth} />
         <TableLabel x={t.x} y={t.y} number={t.number} selected={selected} />
       </g>
@@ -176,7 +195,19 @@ export function RenderTable({
 
     return (
       <g {...common}>
-        {selected && <circle cx={t.x} cy={t.y} r={r + 7} fill="#2e7d4f" opacity="0.12" pointerEvents="none" />}
+        {selected && (
+          <circle
+            cx={t.x}
+            cy={t.y}
+            r={r + 14}
+            fill="#22c55e"
+            opacity="0.25"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeDasharray="4 2"
+            pointerEvents="none"
+          />
+        )}
         <CurvedSofa
           cx={t.x}
           cy={t.y}
@@ -205,6 +236,20 @@ export function RenderTable({
   if (t.shape === 'oval') {
     return (
       <g {...common}>
+        {selected && (
+          <ellipse
+            cx={t.x}
+            cy={t.y}
+            rx={tw / 2 + 14}
+            ry={th / 2 + 14}
+            fill="#22c55e"
+            opacity="0.25"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeDasharray="4 2"
+            pointerEvents="none"
+          />
+        )}
         {chairsAlongSide(topCount, left + inset, top, right - inset, top, 0, 0, -1, 8.5)}
         {chairsAlongSide(bottomCount, left + inset, bottom, right - inset, bottom, 180, 0, 1, 8.5, 1)}
         <ellipse cx={t.x} cy={t.y} rx={tw / 2} ry={th / 2} fill={fill} stroke={stroke} strokeWidth={common.strokeWidth} />
@@ -215,6 +260,21 @@ export function RenderTable({
   
   return (
     <g {...common}>
+      {selected && (
+        <rect
+          x={left - 12}
+          y={top - 12}
+          width={tw + 24}
+          height={th + 24}
+          rx={8}
+          fill="#22c55e"
+          opacity="0.25"
+          stroke="#16a34a"
+          strokeWidth="2.5"
+          strokeDasharray="4 2"
+          pointerEvents="none"
+        />
+      )}
       {sofa && <WallBanquette x={t.x} y={t.y} w={tw} h={th} side={sofa} selected={selected} />}
       {vertical ? (
         <>

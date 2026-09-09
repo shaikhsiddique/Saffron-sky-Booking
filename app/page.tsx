@@ -11,11 +11,37 @@ import {
   GARDEN_TABLES,
   RESTAURANT_TABLES,
   SECTION_TIME_SLOTS,
+  GARDEN_JOIN_PAIRS,
   isTableAllowedForParty,
   type Section,
 } from '@/lib/tables';
+import { ExtraChairToggle, JoinTableToggle } from '@/components/booking/BookingAddons';
 import LandingPage from '@/components/ui/LandingPage';
 import Footer from '@/components/ui/Footer';
+
+function getIndiaNow() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '0';
+  return {
+    year: Number(get('year')),
+    month: Number(get('month')),
+    day: Number(get('day')),
+    hour: Number(get('hour')),
+  };
+}
+
+function getIndiaToday() {
+  const now = getIndiaNow();
+  return `${now.year}-${String(now.month).padStart(2, '0')}-${String(now.day).padStart(2, '0')}`;
+}
 
 export default function BookingPage() {
   const [section, setSection] = useState<Section>('restaurant');
@@ -43,9 +69,30 @@ export default function BookingPage() {
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  const [hasExtraChair, setHasExtraChair] = useState(false);
+  const [isJoinTableEnabled, setIsJoinTableEnabled] = useState(false);
+
+  const isSameDayClosed = date === getIndiaToday() && getIndiaNow().hour >= 19;
+
   const bookingFormRef = useRef<BookingFormHandle>(null);
 
   const guestCount = adults + children;
+
+  // Auto-reset extra chair if guestCount is not 5 or 7
+  useEffect(() => {
+    if (guestCount !== 5 && guestCount !== 7) {
+      setHasExtraChair(false);
+    }
+  }, [guestCount]);
+
+  // Auto-set join table state based on section and guestCount
+  useEffect(() => {
+    if (section !== 'garden' || guestCount <= 8) {
+      setIsJoinTableEnabled(false);
+    } else {
+      setIsJoinTableEnabled(true);
+    }
+  }, [section, guestCount]);
 
   const activeTables =
     section === 'restaurant'
@@ -213,9 +260,6 @@ export default function BookingPage() {
   }, [fetchBookedTables]);
 
 
-
-
-
   // =========================================================
   // SECTION CHANGE
   // =========================================================
@@ -225,6 +269,8 @@ export default function BookingPage() {
 
     // Clear selected table when switching section
     setSelectedTable('');
+    setHasExtraChair(false);
+    setIsJoinTableEnabled(false);
 
     // Clear old section availability
     setBookedTableIds([]);
@@ -249,7 +295,8 @@ export default function BookingPage() {
         current &&
         !isTableAllowedForParty(
           current.capacity,
-          nextCount
+          nextCount,
+          section
         )
       ) {
         setSelectedTable('');
@@ -276,7 +323,8 @@ export default function BookingPage() {
         current &&
         !isTableAllowedForParty(
           current.capacity,
-          nextCount
+          nextCount,
+          section
         )
       ) {
         setSelectedTable('');
@@ -322,18 +370,43 @@ export default function BookingPage() {
     }
 
 
+    // Join Table Logic for Garden Dine when guestCount > 8 and join table is enabled
+    if (section === 'garden' && isJoinTableEnabled && guestCount > 8) {
+      const preferredPairs = GARDEN_JOIN_PAIRS[id] || [];
+      const companion = preferredPairs.find(
+        (pairId) => pairId !== id && !bookedTableIds.includes(pairId)
+      ) || activeTables.find(
+        (t) => t.id !== id && !bookedTableIds.includes(t.id)
+      )?.id;
+
+      if (!companion) {
+        addToast(
+          'error',
+          'No Companion Table Available',
+          `Could not find an available adjacent table to join with Table ${id} for this time slot.`
+        );
+        return;
+      }
+
+      setSelectedTable(`${id} + ${companion}`);
+      addToast(
+        'success',
+        'Tables Joined! 🌿🔗',
+        `Linked Table ${id} and Table ${companion} for your party of ${guestCount}.`
+      );
+      return;
+    }
+
     // Find selected table
-    const table = activeTables.find(
-      (t) => t.id === id
-    );
+    const table = activeTables.find((t) => t.id === id);
 
-
-    // Check capacity
+    // Standard capacity check (when not joining tables)
     if (
       table &&
       !isTableAllowedForParty(
         table.capacity,
-        guestCount
+        guestCount,
+        section
       )
     ) {
       addToast(
@@ -344,7 +417,6 @@ export default function BookingPage() {
 
       return;
     }
-
 
     // Select table
     setSelectedTable(id);
@@ -450,6 +522,9 @@ export default function BookingPage() {
 
 
     try {
+      const isJoined = selectedTable.includes('+');
+      const tableParts = selectedTable.split('+').map((s) => s.trim()).filter(Boolean);
+
       const response = await fetch(
         '/api/bookings',
         {
@@ -467,6 +542,11 @@ export default function BookingPage() {
             timeSlot,
             tableId: selectedTable,
             section,
+            hasExtraChair,
+            extraChair: hasExtraChair,
+            isJoinedTable: isJoined,
+            tableIds: tableParts,
+            joinedTableId: isJoined && tableParts.length > 1 ? tableParts[1] : undefined,
           }),
         }
       );
@@ -516,6 +596,8 @@ export default function BookingPage() {
       setDate('');
       setSelectedTable('');
       setBookedTableIds([]);
+      setHasExtraChair(false);
+      setIsJoinTableEnabled(false);
 
     } catch (error: any) {
       addToast(
@@ -563,14 +645,14 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Fine Dine closed notice */}
+        {/* Fine Dine In closed notice */}
         {isBookingEnabled && !isRestaurantEnabled && (
           <div className="mt-5 flex items-center gap-3 rounded-2xl border border-orange-200 bg-orange-50/95 p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-200/70 text-xl">🍽️</div>
             <div>
-              <h3 className="text-base font-semibold text-orange-950 sm:text-lg">Fine Dine Temporarily Unavailable</h3>
+              <h3 className="text-base font-semibold text-orange-950 sm:text-lg">Fine Dine In Temporarily Unavailable</h3>
               <p className="mt-0.5 text-xs text-orange-800 sm:text-sm">
-                The Fine Dine section is currently closed.{isGardenEnabled ? ' Garden Dine is still open for reservations.' : ''}
+                The Fine Dine In section is currently closed.{isGardenEnabled ? ' Garden Dine is still open for reservations.' : ''}
               </p>
             </div>
           </div>
@@ -602,6 +684,19 @@ export default function BookingPage() {
           </div>
         )}
 
+        {/* Same-day 7 PM cutoff notice */}
+        {isBookingEnabled && date && isSameDayClosed && (
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50/95 p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-200/70 text-xl font-bold">🌙</div>
+            <div>
+              <h3 className="text-base font-semibold text-amber-950 sm:text-lg">Same-Day Bookings Closed</h3>
+              <p className="mt-0.5 text-xs text-amber-800 sm:text-sm">
+                Same-day reservations for today close at 7:00 PM. Please select tomorrow or a future date.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* =================================================
             RESPONSIVE BOOKING AREA
             MOBILE: Form → Section + Floor Plan → Submit button
@@ -622,6 +717,9 @@ export default function BookingPage() {
             timeSlot={timeSlot}
             selectedTable={selectedTable}
             loading={loading}
+            section={section}
+            hasExtraChair={hasExtraChair}
+            isJoinTableEnabled={isJoinTableEnabled}
             isBookingEnabled={isBookingEnabled}
             blockedDates={blockedDates}
             bookingPauseReason={bookingPauseReason}
@@ -632,6 +730,8 @@ export default function BookingPage() {
             onChildrenChange={handleChildrenChange}
             onDateChange={handleDateChange}
             onTimeSlotChange={handleTimeSlotChange}
+            onExtraChairChange={setHasExtraChair}
+            onJoinTableToggle={setIsJoinTableEnabled}
             onSubmit={handleSubmit}
           />
 
@@ -661,6 +761,21 @@ export default function BookingPage() {
 
           </section>
 
+          {/* Extra Chair Addon (only for guest size 5 or 7) below table layout, above submit button */}
+          <ExtraChairToggle
+            guestCount={guestCount}
+            hasExtraChair={hasExtraChair}
+            onChange={setHasExtraChair}
+          />
+
+          {/* Join Table Option (only for Garden Dine & guest size > 8) below table layout, above submit button */}
+          <JoinTableToggle
+            section={section}
+            guestCount={guestCount}
+            isJoinTableEnabled={isJoinTableEnabled}
+            onToggle={setIsJoinTableEnabled}
+          />
+
           {/* 3. Submit / Book Button */}
           <button
             type="button"
@@ -668,7 +783,8 @@ export default function BookingPage() {
               loading ||
               !isBookingEnabled ||
               (section === 'restaurant' && !isRestaurantEnabled) ||
-              (section === 'garden' && !isGardenEnabled)
+              (section === 'garden' && !isGardenEnabled) ||
+              isSameDayClosed
             }
             onClick={() => bookingFormRef.current?.submitForm()}
             className="w-full rounded-xl bg-gradient-to-r from-[#263126] to-[#2e7d4f] px-4 py-4 font-semibold text-white transition-all hover:from-[#1e271e] hover:to-[#256843] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 text-[15px] tracking-wide shadow-[0_4px_20px_rgba(46,125,79,0.35)]"
@@ -677,11 +793,13 @@ export default function BookingPage() {
               ? '⏳ Booking…'
               : !isBookingEnabled
                 ? 'Reservations Paused'
-                : (section === 'restaurant' && !isRestaurantEnabled)
-                  ? 'Fine Dine Closed'
-                  : (section === 'garden' && !isGardenEnabled)
-                    ? 'Garden Dine Closed'
-                    : '🍽️ Confirm Reservation'}
+                : isSameDayClosed
+                  ? 'Same-Day Closed (After 7 PM)'
+                  : (section === 'restaurant' && !isRestaurantEnabled)
+                    ? 'Fine Dine In Closed'
+                    : (section === 'garden' && !isGardenEnabled)
+                      ? 'Garden Dine Closed'
+                      : '🍽️ Confirm Reservation'}
           </button>
 
         </div>
@@ -740,6 +858,9 @@ export default function BookingPage() {
               timeSlot={timeSlot}
               selectedTable={selectedTable}
               loading={loading}
+              section={section}
+              hasExtraChair={hasExtraChair}
+              isJoinTableEnabled={isJoinTableEnabled}
               isBookingEnabled={isBookingEnabled}
               blockedDates={blockedDates}
               bookingPauseReason={bookingPauseReason}
@@ -749,6 +870,8 @@ export default function BookingPage() {
               onChildrenChange={handleChildrenChange}
               onDateChange={handleDateChange}
               onTimeSlotChange={handleTimeSlotChange}
+              onExtraChairChange={setHasExtraChair}
+              onJoinTableToggle={setIsJoinTableEnabled}
               onSubmit={handleSubmit}
             />
 

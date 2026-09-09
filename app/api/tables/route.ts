@@ -52,18 +52,25 @@ export async function GET(request: NextRequest) {
       ? (settings?.isRestaurantEnabled === false)
       : (settings?.isGardenEnabled === false);
     const isDateBlocked = Array.isArray(settings?.blockedDates) && settings.blockedDates.includes(date);
-    const isBookingBlocked = isMasterDisabled || isSectionDisabled || isDateBlocked;
+    const nowForIST = new Date();
+    const todayIST = getISTDateString(nowForIST);
+    const currentISTHour = getISTHour(nowForIST);
+    const isSameDayClosed = date === todayIST && currentISTHour >= 19;
+
+    const isBookingBlocked = isMasterDisabled || isSectionDisabled || isDateBlocked || isSameDayClosed;
 
     let blockReason = '';
     if (isMasterDisabled) {
       blockReason = settings?.reason || 'Online bookings are currently paused by management.';
     } else if (isSectionDisabled) {
       const sectionMsg = section === 'restaurant'
-        ? (settings?.restaurantMessage || 'Restaurant dine-in bookings are currently closed.')
+        ? (settings?.restaurantMessage || 'Fine Dine In bookings are currently closed.')
         : (settings?.gardenMessage || 'Garden dine-in bookings are currently closed.');
       blockReason = sectionMsg;
     } else if (isDateBlocked) {
       blockReason = `Reservations are closed for ${date}.`;
+    } else if (isSameDayClosed) {
+      blockReason = 'Same-day reservations for today close at 7:00 PM. Please select a future date.';
     }
 
     const bookingsCollection =
@@ -87,9 +94,19 @@ export async function GET(request: NextRequest) {
           })
           .toArray();
 
-    const bookedTableIds = bookings.map(
-      (booking: any) => booking.tableId
-    );
+    const bookedTableIds: string[] = [];
+    bookings.forEach((booking: any) => {
+      if (Array.isArray(booking.tableIds)) {
+        bookedTableIds.push(...booking.tableIds.map(String));
+      }
+      if (typeof booking.tableId === 'string') {
+        const ids = booking.tableId
+          .split(/[,+]/)
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+        bookedTableIds.push(...ids);
+      }
+    });
 
     const tablesWithAvailability =
       tables.map((table) => {
@@ -104,8 +121,15 @@ export async function GET(request: NextRequest) {
 
         const matchingBooking =
           bookings.find(
-            (booking: any) =>
-              booking.tableId === table.id
+            (booking: any) => {
+              if (booking.tableId === table.id) return true;
+              if (Array.isArray(booking.tableIds) && booking.tableIds.includes(table.id)) return true;
+              if (typeof booking.tableId === 'string') {
+                const parts = booking.tableId.split(/[,+]/).map((s: string) => s.trim());
+                return parts.includes(table.id);
+              }
+              return false;
+            }
           );
 
         const isAvailable =
@@ -158,4 +182,24 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function getISTDateString(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(date);
+}
+
+function getISTHour(date: Date): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    hour12: false,
+  }).formatToParts(date);
+  const hourPart = parts.find((p) => p.type === 'hour');
+  return hourPart ? parseInt(hourPart.value, 10) : date.getHours();
 }

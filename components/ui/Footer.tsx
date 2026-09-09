@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -165,9 +166,9 @@ function Footer() {
               <address className="not-italic text-sm font-light leading-6 text-[#aaa69d]">
                 Saffron Sky
                 <br />
-                Landmark Business Centre
+                3rd Floor, Landmark Business Centre
                 <br />
-                Karanje Turf
+                Next to Shahu Stadium
                 <br />
                 Satara, Maharashtra 415001
               </address>
@@ -229,6 +230,7 @@ function Footer() {
                 </p>
               </div>
             </div>
+
           </div>
 
           {/* Divider */}
@@ -270,6 +272,7 @@ function Footer() {
             <p className="text-[10px] uppercase tracking-[0.16em] text-[#55524c]">
               Crafted for memorable evenings
             </p>
+
           </div>
         </div>
       </footer>
