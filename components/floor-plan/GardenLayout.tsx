@@ -98,12 +98,8 @@ export function GardenLayout() {
         <rect x="160" y="1083" width="68" height="163" rx="0" fill="#f4f0e7" stroke={WALL} strokeWidth="2.5" />
         <line x1="160" y1="1137" x2="228" y2="1137" stroke={THIN} strokeWidth="1.4" />
         <line x1="160" y1="1191" x2="228" y2="1191" stroke={THIN} strokeWidth="1.4" />
-        <Toilet cx={194} cy={1113} />
-        <Toilet cx={194} cy={1167} />
-        <Toilet cx={194} cy={1221} />
-        <WallDoor x={228} y={1090} w={26} side="right" />
-        <WallDoor x={228} y={1144} w={26} side="right" />
-        <WallDoor x={228} y={1198} w={26} side="right" />
+
+
         <text x="194" y="1252" textAnchor="middle" fontSize="5.5" fill="#666" letterSpacing="0.5">WC</text>
       </g>
 
