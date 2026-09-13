@@ -106,7 +106,7 @@ function Footer() {
 
                 {/* Instagram */}
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/saffronsky_satara/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
@@ -136,7 +136,7 @@ function Footer() {
 
                 {/* Facebook */}
                 <a
-                  href="https://facebook.com"
+                  href="https://www.facebook.com/people/Saffron-Sky/61585917376631/#"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"

@@ -624,7 +624,7 @@ export default function BookingPage() {
       <LandingPage />
 
 
-      <div className="mx-auto my-[10vh] w-full max-w-[1520px] p-3 sm:p-4 md:p-6 lg:p-8">
+      <div id='booking' className="mx-auto my-[10vh] w-full max-w-[1520px] p-3 sm:p-4 md:p-6 lg:p-8">
 
         <BookingHeader />
 

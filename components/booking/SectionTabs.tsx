@@ -18,7 +18,7 @@ export function SectionTabs({
   const SECTIONS = [
     {
       id: 'restaurant' as Section,
-      label: 'Fine Dine In',
+      label: 'Fine Dine ',
       emoji: '🍽️',
       enabled: isRestaurantEnabled,
       image: 'https://res.cloudinary.com/daai6xwtd/image/upload/v1788697767/restaurant_yvohsy.jpg',
